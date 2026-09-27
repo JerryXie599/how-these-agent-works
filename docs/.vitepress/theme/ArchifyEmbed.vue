@@ -5,11 +5,11 @@
       <span class="archify-title">{{ title }}</span>
       <span class="archify-hint">Archify 交互图 · 缩放预览</span>
       <button class="archify-zoom" type="button" @click="open = true">放大体验 ⛶</button>
-      <a class="archify-open" :href="src" target="_blank" rel="noreferrer">新窗口打开 ↗</a>
+      <a class="archify-open" :href="url" target="_blank" rel="noreferrer">新窗口打开 ↗</a>
     </div>
     <div class="archify-viewport" :style="{ height: viewportHeight + 'px' }" title="点击放大" @click="open = true">
       <iframe
-        :src="src"
+        :src="url"
         :title="title"
         loading="lazy"
         :style="{ width: DESIGN_W + 'px', height: DESIGN_H + 'px', transform: `scale(${scale})` }"
@@ -21,7 +21,7 @@
           <span>{{ title }}</span>
           <button class="archify-close" type="button" @click="open = false">✕ 关闭 (Esc)</button>
         </div>
-        <iframe :src="src" :title="title"></iframe>
+        <iframe :src="url" :title="title"></iframe>
       </div>
     </Teleport>
   </div>
@@ -29,12 +29,16 @@
 
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch, computed } from "vue";
+import { withBase } from "vitepress";
 
 const props = defineProps({
   /** 站点根路径下的 archify HTML，如 /archify/pi-architecture.html */
   src: { type: String, required: true },
   title: { type: String, default: "架构图" }
 });
+
+// GitHub Pages 项目站部署在子路径下：withBase 把 /archify/x.html 变成 /<repo>/archify/x.html
+const url = computed(() => withBase(props.src));
 
 // Archify 工件按 ≥1440×900 的桌面视口自校验，内嵌时按该设计尺寸等比缩放，
 // 保证画布完整呈现；需要原生交互时点「放大体验」进入全屏。
