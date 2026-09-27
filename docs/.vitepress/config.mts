@@ -2,13 +2,18 @@ import { Buffer } from "node:buffer";
 import { defineConfig } from "vitepress";
 import { agentSidebar } from "./agents.mjs";
 
+// GitHub Pages 项目站部署在 /how-these-agent-works/ 子路径下；
+// 部署 workflow 里设 GITHUB_PAGES=1 时自动加 base，本地构建不受影响。
+const isPages = process.env.GITHUB_PAGES === "1";
+
 export default defineConfig({
   title: "AI Agent 原理与实现",
   description: "拆解 pi、Claude Code、DSH 的中文渐进式 Agent 教程",
   lang: "zh-CN",
   cleanUrls: true,
+  base: isPages ? "/how-these-agent-works/" : "/",
   lastUpdated: true,
-  head: [["link", { rel: "icon", href: "/logo.svg", type: "image/svg+xml" }]],
+  head: [["link", { rel: "icon", href: isPages ? "/how-these-agent-works/logo.svg" : "/logo.svg", type: "image/svg+xml" }]],
   markdown: {
     lineNumbers: true,
     config(md) {
