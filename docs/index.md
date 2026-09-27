@@ -37,6 +37,8 @@ features:
 
 ## 七个项目怎么选
 
+本站解析分两类：**通用 coding agent**（pi、Claude Code、DSH、opencode——帮人在终端写代码）与**渗透 agent**（AtkBrain、T3MP3ST、CyberStrike——在已授权环境下做攻击面侦察与漏洞验证，仅限授权使用）。两类共用同一个循环骨架，对照着读最能看清"哪些是本质、哪些是场景特化"。
+
 | | Pi | Claude Code | DSH | opencode | AtkBrain | T3MP3ST | CyberStrike |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 一句话定位 | 小核心 + 扩展的终端 coding harness | Anthropic 官方多端 coding Agent | DeepSeek 的配置即代码 Harness | 以可嵌入 server 为中心的 coding agent | 攻击图驱动的 AI 渗透平台（运行时嵌 Pi） | 借本机 agent 当大脑的多 Agent 攻防框架 | opencode 的攻击性安全分叉（13+ 安全智能体） |
