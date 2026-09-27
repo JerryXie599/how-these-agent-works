@@ -1,0 +1,8 @@
+flowchart LR
+    A[运行时事件] --> B[(event 表)]
+    A --> C[(message / part 表)]
+    A --> D[(session_input 收件箱)]
+    B -->|after 游标重放| E[SSE 推给客户端]
+    C -->|投影| F[模型可见历史]
+
+

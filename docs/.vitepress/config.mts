@@ -1,9 +1,10 @@
 import { Buffer } from "node:buffer";
 import { defineConfig } from "vitepress";
+import { agentSidebar } from "./agents.mjs";
 
 export default defineConfig({
-  title: "Pi Agent 原理与实现",
-  description: "从零到一实现一个 AI Agent 的中文渐进式教程",
+  title: "AI Agent 原理与实现",
+  description: "拆解 pi、Claude Code、DSH 的中文渐进式 Agent 教程",
   lang: "zh-CN",
   cleanUrls: true,
   lastUpdated: true,
@@ -31,10 +32,11 @@ export default defineConfig({
       provider: "local"
     },
     nav: [
+      { text: "Agent 剖析", link: "/agents/" },
+      { text: "架构图", link: "/architectures" },
       { text: "学习路线", link: "/quick-start" },
       { text: "核心原理", link: "/concepts/what-is-agent" },
       { text: "最终项目", link: "/project/overview" },
-      { text: "联系赞助", link: "/contact" },
       { text: "来源", link: "/reference/sources" }
     ],
     sidebar: [
@@ -45,63 +47,17 @@ export default defineConfig({
           { text: "运行与学习路线", link: "/quick-start" },
           { text: "联系与赞助", link: "/contact" }
         ]
-      },
+},
+      ...agentSidebar(),
       {
-        text: "第一部分：核心概念",
-        collapsed: false,
+        text: "Pi 教学代码与演示",
+        collapsed: true,
         items: [
-          { text: "Agent 到底是什么", link: "/concepts/what-is-agent" },
-          { text: "Pi 的总体架构", link: "/concepts/pi-architecture" },
-          { text: "消息、流式事件与状态", link: "/concepts/message-and-stream" },
-          { text: "工具调用机制", link: "/concepts/tools" },
-          { text: "会话、树与分支", link: "/concepts/sessions" },
-          { text: "上下文、技能与压缩", link: "/concepts/context" }
-        ]
-      },
-      {
-        text: "第二部分：源码拆解",
-        collapsed: false,
-        items: [
-          { text: "源码阅读地图", link: "/source/source-map" },
-          { text: "pi-ai 模型协议层", link: "/source/model-protocol" },
-          { text: "Agent Loop 主循环", link: "/source/agent-loop" },
-          { text: "工具、扩展与资源加载", link: "/source/tools-extensions" },
-          { text: "AgentSession 运行层", link: "/source/agent-session" },
-          { text: "会话格式与压缩链路", link: "/source/session-compaction" },
-          { text: "进阶压缩边界", link: "/source/advanced-compaction" }
-        ]
-      },
-      {
-        text: "第三部分：渐进式 Demo",
-        collapsed: false,
-        items: [
-          { text: "Demo 1：最小 Agent 循环", link: "/demos/01-loop" },
-          { text: "Demo 2：工具定义与执行", link: "/demos/02-tools" },
-          { text: "Demo 3：JSONL 会话树", link: "/demos/03-session-tree" },
-          { text: "Demo 4：上下文压缩", link: "/demos/04-compaction" },
-          { text: "Demo 5：真模型烟测", link: "/demos/05-real-model" }
-        ]
-      },
-      {
-        text: "第四部分：教学版目标项目",
-        collapsed: false,
-        items: [
-          { text: "项目总览", link: "/project/overview" },
-          { text: "Demo 到项目的映射", link: "/project/code-map" },
+          { text: "渐进式 Demo", link: "/demos/01-loop" },
+          { text: "教学版项目总览", link: "/project/overview" },
+          { text: "代码到项目的映射", link: "/project/code-map" },
           { text: "从零实现路线", link: "/project/build-00-roadmap" },
-          { text: "Step 1：共享协议", link: "/project/build-01-protocol" },
-          { text: "Step 2：Loop 与 MockModel", link: "/project/build-02-loop-model" },
-          { text: "Step 3：工具系统", link: "/project/build-03-tools" },
-          { text: "Step 4：JSONL 会话", link: "/project/build-04-session-store" },
-          { text: "Step 5：Express API", link: "/project/build-05-api" },
-          { text: "Step 6：React 前端", link: "/project/build-06-frontend" },
-          { text: "Step 7：调试与验收", link: "/project/build-07-debug" },
-          { text: "测试章节", link: "/project/testing" },
-          { text: "可选：真实模型 Demo", link: "/project/build-08-real-model" },
-          { text: "后端实现", link: "/project/backend" },
-          { text: "前端实现", link: "/project/frontend" },
-          { text: "运行与调试", link: "/project/run" },
-          { text: "扩展方向", link: "/project/extend" }
+          { text: "运行与调试", link: "/project/run" }
         ]
       },
       {

@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "T3MP3ST 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/t3mp3st-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：指令到执行",
+        "focus": [
+          "user",
+          "interfaces",
+          "general",
+          "command",
+          "cell",
+          "loop",
+          "backbone"
+        ],
+        "note": "自然语言指令经战略层编译成计划，编排器把任务派给操作员池。"
+      },
+      {
+        "id": "gate",
+        "label": "执行闸门",
+        "focus": [
+          "loop",
+          "gate",
+          "arsenal",
+          "target"
+        ],
+        "note": "每次工具调用过门控；危险工具 fail-safe 批准；出界目标执行前拒绝。"
+      },
+      {
+        "id": "evidence",
+        "label": "证据与复现",
+        "focus": [
+          "cell",
+          "evidence",
+          "loop"
+        ],
+        "note": "被工具输出背书的 finding 才入库；回执与复现体系在卡片里展开。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "操作员（人）",
+      "sublabel": "War Room · CLI · MCP",
+      "pos": [
+        20,
+        300
+      ],
+      "size": [
+        90,
+        62
+      ]
+    },
+    {
+      "id": "interfaces",
+      "type": "frontend",
+      "label": "三层接口",
+      "sublabel": "CLI · REST · MCP",
+      "pos": [
+        170,
+        300
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "general",
+      "type": "backend",
+      "label": "OpGeneral 战略层",
+      "sublabel": "directive → OpPlan",
+      "pos": [
+        345,
+        300
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "command",
+      "type": "backend",
+      "label": "TempestCommand",
+      "sublabel": "tick 编排 · 阶段推进",
+      "pos": [
+        520,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "cell",
+      "type": "backend",
+      "label": "OperatorCell",
+      "sublabel": "8 操作员 · 状态机",
+      "pos": [
+        705,
+        300
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "loop",
+      "type": "backend",
+      "label": "AgentLoop (ReAct)",
+      "sublabel": "≤15 轮 · 工具选择",
+      "pos": [
+        880,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "backbone",
+      "type": "cloud",
+      "label": "推理后端",
+      "sublabel": "本地 Agent · 云模型",
+      "pos": [
+        875,
+        100
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "evidence",
+      "type": "database",
+      "label": "证据与回执",
+      "sublabel": "证据门 · 工作单 · 复现",
+      "pos": [
+        170,
+        470
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "门控与 Scope",
+      "sublabel": "批准 fail-safe",
+      "pos": [
+        345,
+        470
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "arsenal",
+      "type": "backend",
+      "label": "Arsenal 武器库",
+      "sublabel": "36 内置 · 111 全量",
+      "pos": [
+        520,
+        470
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "target",
+      "type": "external",
+      "label": "授权目标",
+      "sublabel": "范围内资产",
+      "pos": [
+        705,
+        470
+      ],
+      "size": [
+        120,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "执行闸门",
+      "wraps": [
+        "gate",
+        "arsenal"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "interfaces",
+      "label": "下达目标",
+      "variant": "emphasis",
+      "labelAt": [
+        140,
+        291
+      ]
+    },
+    {
+      "from": "interfaces",
+      "to": "general",
+      "label": "自然语言",
+      "labelAt": [
+        315,
+        291
+      ]
+    },
+    {
+      "from": "general",
+      "to": "command",
+      "label": "OpPlan",
+      "labelAt": [
+        490,
+        291
+      ]
+    },
+    {
+      "from": "command",
+      "to": "cell",
+      "label": "派发任务",
+      "variant": "emphasis",
+      "labelAt": [
+        675,
+        291
+      ]
+    },
+    {
+      "from": "cell",
+      "to": "loop",
+      "label": "执行",
+      "labelAt": [
+        850,
+        291
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "backbone",
+      "label": "推理请求",
+      "variant": "emphasis",
+      "labelAt": [
+        880,
+        241
+      ]
+    },
+    {
+      "from": "backbone",
+      "to": "loop"
+    },
+    {
+      "from": "loop",
+      "to": "gate",
+      "label": "工具调用",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          940,
+          430
+        ],
+        [
+          410,
+          430
+        ]
+      ],
+      "labelAt": [
+        620,
+        431
+      ]
+    },
+    {
+      "from": "gate",
+      "to": "arsenal",
+      "label": "放行",
+      "labelAt": [
+        497,
+        494
+      ]
+    },
+    {
+      "from": "arsenal",
+      "to": "target",
+      "label": "范围内执行",
+      "variant": "emphasis",
+      "labelAt": [
+        677,
+        450
+      ]
+    },
+    {
+      "from": "cell",
+      "to": "evidence",
+      "label": "finding 与凭证",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          762.5,
+          415
+        ],
+        [
+          235,
+          415
+        ]
+      ],
+      "labelAt": [
+        500,
+        408
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "借脑不借权（keyless）",
+      "items": [
+        "驱动本机已登录的 Claude Code / Codex / OpenCode 等，不劫持 key",
+        "后端全部降权（只读沙箱 / 工具全禁 / 无工具），可执行动作全归 Arsenal"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "门控 fail-safe",
+      "items": [
+        "危险工具双层批准，无批准者即拒绝，每次决定进审计",
+        "SCOPE DENIED：范围外目标在执行前拦下，而非事后补救"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "证据与复现",
+      "items": [
+        "「Prose is not evidence」：finding 须有工具输出背书",
+        "反驳者面板强制引用校验防幻觉否证；verify-claims 重算头条数字"
+      ]
+    }
+  ]
+}

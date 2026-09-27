@@ -1,0 +1,24 @@
+sequenceDiagram
+  participant UI as CLI/TUI/RPC/SDK
+  participant SDK as createAgentSession
+  participant AS as AgentSession
+  participant A as Agent
+  participant L as runAgentLoop
+  participant AI as Models.stream
+  participant S as SessionManager
+
+  UI->>SDK: 创建 session
+  SDK->>AS: 注入 Agent / ResourceLoader / SessionManager
+  UI->>AS: prompt(text)
+  AS->>A: prompt(messages)
+  A->>L: runAgentLoop(context, config)
+  L->>AI: Models.stream(model, context)
+  AI-->>L: AssistantMessageEvent
+  L-->>A: AgentEvent
+  A-->>AS: subscribe(listener)
+  AS->>S: appendMessage(message)
+
+
+
+
+

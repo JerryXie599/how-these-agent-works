@@ -1,0 +1,17 @@
+flowchart LR
+  A["resources_discover"] --> B["session_start"]
+  B --> C["input"]
+  C --> D["before_agent_start"]
+  D --> E["context / context_with_system"]
+  E --> F["before_provider_request"]
+  F --> G["message_update / message_end"]
+  G --> H["tool_call"]
+  H --> I["tool_result"]
+  I --> J["turn_end"]
+  J --> K["agent_before_settle / agent_end / agent_settled"]
+  K --> L["session_before_compact / session_before_tree"]
+
+
+
+
+

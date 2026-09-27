@@ -1,0 +1,15 @@
+flowchart TD
+  A["cwd / agentDir / settings"] --> R["DefaultResourceLoader"]
+  R --> E["extensions"]
+  R --> S["skills"]
+  R --> P["prompt templates"]
+  R --> T["themes"]
+  R --> C["AGENTS.md / CLAUDE.md"]
+  E --> SP["buildSystemPrompt"]
+  S --> SP
+  C --> SP
+
+
+
+
+

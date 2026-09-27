@@ -90,12 +90,7 @@ async appendMessage(message: AgentMessage): Promise<string> {
 
 `leafId` 指向当前分支的末端。每次 append，新的 entry 的 `parentId` 指向旧 leaf，然后 leaf 前移。
 
-```mermaid
-flowchart LR
-  A["entry_1 user"] --> B["entry_2 assistant"]
-  B --> C["entry_3 toolResult"]
-  C --> D["entry_4 assistant"]
-```
+[![leaf 和 parentId 流程图](/diagrams/project-build-04-session-store-1.png)](/diagrams/project-build-04-session-store-1.png)
 
 ## 从 leaf 构造上下文
 

@@ -1,0 +1,418 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "dsh 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/dsh-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：命令到模型",
+        "focus": [
+          "user",
+          "launcher",
+          "cordis",
+          "host",
+          "agentplane",
+          "llm"
+        ],
+        "note": "一条命令如何经过 profile 叠层、插件树挂载，最终到达模型。"
+      },
+      {
+        "id": "tool-gate",
+        "label": "工具调用与闸门",
+        "focus": [
+          "agentplane",
+          "tools",
+          "approval",
+          "host"
+        ],
+        "note": "工具执行管线：审批门 → guards → execute，缺答即拒的 fail-closed 闸门。"
+      },
+      {
+        "id": "config-session",
+        "label": "Preset、压缩与会话",
+        "focus": [
+          "presets",
+          "compaction",
+          "session",
+          "client"
+        ],
+        "note": "preset 按会话组合 Agent，两层压缩保住上下文，事件溯源日志是唯一事实源。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户",
+      "sublabel": "终端命令",
+      "pos": [
+        20,
+        300
+      ],
+      "size": [
+        85,
+        60
+      ]
+    },
+    {
+      "id": "launcher",
+      "type": "backend",
+      "label": "dsh 启动器",
+      "sublabel": "bin · --profile · --patch",
+      "pos": [
+        160,
+        300
+      ],
+      "size": [
+        115,
+        60
+      ]
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "运行面",
+      "sublabel": "web UI · headless",
+      "pos": [
+        160,
+        490
+      ],
+      "size": [
+        115,
+        60
+      ]
+    },
+    {
+      "id": "cordis",
+      "type": "messagebus",
+      "label": "cordis 插件树",
+      "sublabel": "profile 叠 patch · HMR",
+      "pos": [
+        335,
+        300
+      ],
+      "size": [
+        135,
+        62
+      ]
+    },
+    {
+      "id": "host",
+      "type": "backend",
+      "label": "Host 平面",
+      "sublabel": "dsh-base · 注册表 · 路由",
+      "pos": [
+        530,
+        300
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "agentplane",
+      "type": "backend",
+      "label": "Agent 平面",
+      "sublabel": "ReactLoopAgent · 收件箱",
+      "pos": [
+        730,
+        300
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "external",
+      "label": "DeepSeek API",
+      "sublabel": "dsh-llm 适配器",
+      "pos": [
+        930,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "presets",
+      "type": "database",
+      "label": "Agent Presets",
+      "sublabel": "standard · code · cordis",
+      "pos": [
+        690,
+        120
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "compaction",
+      "type": "backend",
+      "label": "两层压缩",
+      "sublabel": "阈值 0.8 摘要 · 结果裁剪",
+      "pos": [
+        850,
+        120
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "approval",
+      "type": "security",
+      "label": "审批 + 沙箱",
+      "sublabel": "Seatbelt · bwrap · ACL",
+      "pos": [
+        530,
+        490
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "工具管线",
+      "sublabel": "门 → guards → execute",
+      "pos": [
+        730,
+        490
+      ],
+      "size": [
+        145,
+        62
+      ]
+    },
+    {
+      "id": "session",
+      "type": "database",
+      "label": "事件溯源会话",
+      "sublabel": "jsonl.zstd · 投影派生",
+      "pos": [
+        930,
+        490
+      ],
+      "size": [
+        120,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "fail-closed 执行闸门",
+      "wraps": [
+        "approval",
+        "tools"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "launcher",
+      "label": "启动命令",
+      "variant": "emphasis"
+    },
+    {
+      "from": "launcher",
+      "to": "client",
+      "label": "拉起运行面",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        217.5,
+        425
+      ]
+    },
+    {
+      "from": "client",
+      "to": "host",
+      "label": "HTTP↑ · WS↓",
+      "fromSide": "right",
+      "toSide": "left",
+      "via": [
+        [
+          497,
+          520
+        ],
+        [
+          497,
+          331
+        ]
+      ],
+      "labelAt": [
+        385,
+        514
+      ]
+    },
+    {
+      "from": "launcher",
+      "to": "cordis",
+      "label": "boot()",
+      "variant": "emphasis"
+    },
+    {
+      "from": "cordis",
+      "to": "host",
+      "label": "dsh-base",
+      "labelAt": [
+        502,
+        295
+      ]
+    },
+    {
+      "from": "host",
+      "to": "agentplane",
+      "label": "提供运行时",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelAt": [
+        702,
+        291
+      ]
+    },
+    {
+      "from": "agentplane",
+      "to": "llm",
+      "label": "llm.stream()",
+      "variant": "emphasis",
+      "labelAt": [
+        902,
+        285
+      ]
+    },
+    {
+      "from": "llm",
+      "to": "agentplane"
+    },
+    {
+      "from": "presets",
+      "to": "agentplane",
+      "label": "每会话组合",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        758,
+        250
+      ]
+    },
+    {
+      "from": "agentplane",
+      "to": "compaction",
+      "label": "接近阈值",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        908,
+        250
+      ]
+    },
+    {
+      "from": "agentplane",
+      "to": "tools",
+      "label": "tools.execute()",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          802.5,
+          430
+        ]
+      ],
+      "labelAt": [
+        738,
+        425
+      ]
+    },
+    {
+      "from": "tools",
+      "to": "approval",
+      "label": "审批",
+      "variant": "security"
+    },
+    {
+      "from": "host",
+      "to": "approval",
+      "label": "策略 ask / never",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          602.5,
+          430
+        ]
+      ],
+      "labelAt": [
+        602.5,
+        420
+      ]
+    },
+    {
+      "from": "tools",
+      "to": "session",
+      "label": "事件追加",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          802.5,
+          578
+        ],
+        [
+          990,
+          578
+        ]
+      ],
+      "labelAt": [
+        896,
+        592
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "配置即代码",
+      "items": [
+        "profile 是有序的 patch 叠层，改文件即热重载（HMR）",
+        "--dump-config 可查看合成后的完整配置树"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "fail-closed 审批",
+      "items": [
+        "审批缺答即拒：allowed-once / rejected / cancelled / unavailable",
+        "沙箱按平台落地：macOS Seatbelt · Linux bwrap/Landlock · Windows ACL"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "事件溯源会话",
+      "items": [
+        "append-only 日志是唯一事实源，消息历史是投影",
+        "两层压缩：无模型的结果裁剪在前，LLM 摘要在后"
+      ]
+    }
+  ]
+}

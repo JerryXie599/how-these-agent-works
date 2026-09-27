@@ -6,17 +6,7 @@
 
 ## 先看扩展路线
 
-```mermaid
-flowchart TB
-  A["教学版 MockModel Agent"] --> B["provider adapter"]
-  A --> C["tool permission hook"]
-  A --> D["SSE streaming UI"]
-  A --> E["session tree UI"]
-  B --> F["真实模型 + 统一协议"]
-  C --> G["工具确认 / 拦截 / 改写"]
-  D --> H["增量消息和工具事件"]
-  E --> I["分支导航和 branch summary"]
-```
+[![先看扩展路线 流程图](/diagrams/project-extend-1.png)](/diagrams/project-extend-1.png)
 
 事实核对口径：
 
@@ -130,27 +120,7 @@ const result = await toolRegistry.execute(toolCall.name, args);
 
 当前教学版已经实现两段式 SSE：浏览器先创建 run，再订阅该 run 的事件流。`POST /api/prompt` 仍然保留给 curl 和一次性 API 调试。
 
-```mermaid
-sequenceDiagram
-  participant UI as React UI
-  participant API as Express API
-  participant Loop as runAgentLoop
-  participant Model as Model Adapter
-  participant Tools as ToolRegistry
-
-  UI->>API: POST /api/runs { text }
-  API-->>UI: { runId }
-  UI->>API: GET /api/runs/:runId/events
-  API->>Loop: runAgentLoop(onEvent)
-  Loop->>Model: complete / stream
-  Model-->>Loop: message_update
-  Loop-->>API: AgentEvent
-  API-->>UI: SSE event
-  Loop->>Tools: execute tool
-  Tools-->>Loop: toolResult
-  Loop-->>API: tool_execution_end
-  API-->>UI: SSE event
-```
+[![3. 真正流式 UI：用 SSE 推事件 流程图](/diagrams/project-extend-2.png)](/diagrams/project-extend-2.png)
 
 后端事件格式可以直接复用 `AgentEvent`：
 

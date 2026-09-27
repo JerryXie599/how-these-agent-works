@@ -1,0 +1,42 @@
+flowchart TB
+  subgraph Product["pi-coding-agent：产品运行层"]
+    CLI["交互模式 / TUI / RPC / print"]
+    Session["AgentSession + SessionManager"]
+    Resources["ResourceLoader: 扩展 / 技能 / Prompt / AGENTS.md"]
+    BuiltinTools["内置工具: read / bash / edit / write / grep / find / ls"]
+  end
+
+  subgraph Core["pi-agent-core：Agent 内核层"]
+    Agent["Agent 状态机"]
+    Loop["runAgentLoop / agentLoop"]
+    Queue["steer / followUp 队列"]
+    Hooks["prepareRequest / finishTurn / beforeToolCall / afterToolCall"]
+    Harness["AgentHarness（新一代运行时）"]
+  end
+
+  subgraph AI["pi-ai：模型适配层"]
+    Models["Models.stream / streamSimple"]
+    ApiAdapters["API 适配器: api/*"]
+    Providers["Provider 定义: providers/*"]
+    Types["Message / Tool / Event 协议"]
+  end
+
+  CLI --> Session
+  Session --> Agent
+  Resources --> Session
+  BuiltinTools --> Session
+  Agent --> Loop
+  Loop --> Models
+  Models --> ApiAdapters
+  ApiAdapters --> Providers
+  Providers --> ApiAdapters
+  ApiAdapters --> Models
+  Models --> Loop
+  Loop --> Hooks
+  Agent --> Harness
+  Harness -.->|"下一代运行层，见 source/agent-session"| Session
+
+
+
+
+

@@ -1,0 +1,101 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AtkBrain 自循环：御主-从者",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/public/archify/atkbrain-loop.html",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "从指令到工人",
+        "focus": ["user", "console", "loop", "brief", "lead", "workers"],
+        "note": "人工指令打断本轮；引擎每轮重建简报后 fanout 工人。"
+      },
+      {
+        "id": "state-loop",
+        "label": "图怎么喂回下一轮",
+        "focus": ["graph", "brief", "lead"],
+        "note": "从者写图，简报从图重建——状态外置的循环闭环。"
+      },
+      {
+        "id": "master-gate",
+        "label": "御主与闸门",
+        "focus": ["supervisor", "lead", "gate"],
+        "note": "整轮打完才问御主；每次工具调用先过四道闸。"
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "ui", "label": "人 · 控制台" },
+    { "id": "runtime", "label": "循环运行时" },
+    { "id": "govern", "label": "闸门 · 图 · 御主", "variant": "exception" }
+  ],
+  "mainPath": ["user", "console", "loop", "brief", "lead", "workers"],
+  "semanticChecks": {
+    "allowedRoots": ["user"],
+    "requiredPaths": [
+      { "from": "user", "to": "console" },
+      { "from": "console", "to": "loop" },
+      { "from": "loop", "to": "brief" },
+      { "from": "brief", "to": "lead" },
+      { "from": "lead", "to": "workers" }
+    ],
+    "requiredEdges": [
+      { "from": "workers", "to": "gate" },
+      { "from": "graph", "to": "brief" },
+      { "from": "supervisor", "to": "lead" }
+    ]
+  },
+  "nodes": [
+    { "id": "user", "lane": "ui", "col": 0, "type": "external", "label": "人工指令", "sublabel": "随时打断", "width": 120 },
+    { "id": "console", "lane": "ui", "col": 1, "type": "frontend", "label": "控制台", "sublabel": "攻击图 · 时间线", "width": 120 },
+    { "id": "loop", "lane": "runtime", "col": 1, "type": "backend", "label": "自循环引擎", "sublabel": "猎钟 · 收工判定", "width": 120 },
+    { "id": "brief", "lane": "runtime", "col": 2, "type": "backend", "label": "重建简报", "sublabel": "图 + Intent + 绑定", "width": 120 },
+    { "id": "lead", "lane": "runtime", "col": 3, "type": "backend", "label": "从者会话", "sublabel": "计划 · 写图 · 汇总", "width": 120 },
+    { "id": "workers", "lane": "runtime", "col": 4, "type": "messagebus", "label": "工人 fanout", "sublabel": "并行 Pi 会话", "width": 120 },
+    { "id": "graph", "lane": "govern", "col": 2, "type": "database", "label": "攻击图", "sublabel": "SQLite · 硬校验", "width": 120 },
+    { "id": "supervisor", "lane": "govern", "col": 3, "type": "backend", "label": "御主", "sublabel": "一次性无工具 Pi", "width": 120 },
+    { "id": "gate", "lane": "govern", "col": 4, "type": "security", "label": "四道闸", "sublabel": "拦截 / 放行 · 执行", "width": 120 }
+  ],
+  "edges": [
+    { "id": "user-console", "from": "user", "to": "console", "label": "输入" },
+    { "id": "console-loop", "from": "console", "to": "loop", "label": "启停 · steer", "variant": "emphasis" },
+    { "id": "loop-brief", "from": "loop", "to": "brief", "label": "重建简报", "variant": "emphasis" },
+    { "id": "brief-lead", "from": "brief", "to": "lead", "label": "instruction" },
+    { "id": "lead-workers", "from": "lead", "to": "workers", "label": "fanout", "variant": "emphasis" },
+    { "id": "workers-gate", "from": "workers", "to": "gate", "label": "工具调用", "variant": "security" },
+    { "id": "gate-workers", "from": "gate", "to": "workers", "role": "return" },
+    { "id": "lead-graph", "from": "lead", "to": "graph", "label": "写图 · 汇总" },
+    { "id": "graph-brief", "from": "graph", "to": "brief", "label": "下一轮局面", "variant": "dashed" },
+    { "id": "lead-supervisor", "from": "lead", "to": "supervisor", "label": "整轮打完再问", "variant": "dashed" },
+    { "id": "supervisor-lead", "from": "supervisor", "to": "lead", "label": "方案绑定", "role": "return" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "每轮重开会话",
+      "items": [
+        "历史不进上下文，局面只靠攻击图与简报",
+        "御主方案编译成 must/deny/ban 硬清单"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "三条件收口",
+      "items": [
+        "收工句 / 从者返回 / 墙钟，谁先到算谁",
+        "人工指令打断本轮并压制后续 3 轮"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "卡住才问御主",
+      "items": [
+        "门闩阶梯决定何时花一次模型调用",
+        "问不到就按自己思路继续，不阻塞"
+      ]
+    }
+  ]
+}

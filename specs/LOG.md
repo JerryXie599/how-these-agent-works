@@ -709,3 +709,48 @@
 - 验证：
   - `npm run docs:build` 成功。
   - `git diff --check` 成功。
+
+## 2026-09-22
+
+### 33. 对照最新 Pi v0.87.0 更新源码拆解
+
+- 背景：教程最初基于 Pi v0.78.0（2026-05-26 核对）。本地克隆了最新 `earendil-works/pi`（`main` 分支，v0.87.0，2026-09-22）用于对照。
+- 核对的主要差异：
+  - `packages/ai/src/stream.ts` 已不存在，模型入口变为 `packages/ai/src/models.ts`（`Models.stream()` / `streamSimple()` / `complete()`）；每家 API 适配器落在 `packages/ai/src/api/*`（懒加载为 `*.lazy.ts`）；顶层 `streamSimple` 保留在 `legacy-api-aliases.ts` 并标记 deprecated。
+  - `packages/ai/src/providers/transform-messages.ts` 移入 `api/transform-messages.ts`；`api-registry.ts` 不存在，注册与查找见 `api/lazy.ts` 与 `index.ts`。
+  - `Context.systemPrompt` 变可选，新增 `normalizeContext()` 与 `TranscriptContext`；`AssistantMessageEvent` 变为 `start/text_*/thinking_*/toolcall_*/done/error` 联合；`stopReason` 增加 `pending` / `deferred`。
+  - `pi-agent-core` 新增 `packages/agent/src/harness/`：`AgentHarness` v2 API（v0.84.0 起默认导出），v4 lane-based `Session` / `JsonlSessionRepo`，内置工具、压缩、技能、prompt templates；`coding-agent` 主线仍用 `AgentSession` + `SessionManager`（`CURRENT_SESSION_VERSION = 3`）。
+  - `shouldStopAfterTurn` 在 v0.87 移除，改为 `finishTurn`（返回 `{ action: "end" }`）；新增 `prepareRequest`。
+  - `pi-coding-agent` 新增 `ContextEditEntry`、`appendContextEdit`、`context_with_system` 扩展事件、`turn_end` / `agent_before_settle` 可行动边界；压缩支持按模型覆盖预算（`compaction.modelOverrides`）与零保留压缩。
+- 更新的页面：
+  - `docs/source/source-map.md`：顶部版本对照、三包边界表、主线时序图、扩展点表、源码对应关系。
+  - `docs/source/model-protocol.md`：`Context` / `TranscriptContext`、`AssistantMessageEvent`、`stopReason`、源码阅读表、版本说明。
+  - `docs/source/agent-loop.md`：`prepareArguments`、`prepareRequest` / `finishTurn`、loop 入口对照。
+  - `docs/source/tools-extensions.md`：`AgentTool` 结构、扩展事件检查点、v0.86 严格 schema 采样、v0.87 扩展事件变化。
+  - `docs/source/agent-session.md`：SessionManager canonical context、AgentHarness 下一代说明。
+  - `docs/source/session-compaction.md`：`context_edit` entry、v3/v4 版本说明、harness 源码路线。
+  - `docs/source/advanced-compaction.md`：事实核对新增按模型预算 / 零保留 / ContextEditEntry。
+  - `docs/concepts/pi-architecture.md`、`message-and-stream.md`、`sessions.md`、`tools.md`：相应协议与版本说明。
+  - `docs/reference/sources.md`：源码表与最近核对记录更新到 v0.87.0。
+- 未改动：
+  - `examples/*` 教学实现与 `docs/project/*`、`docs/demos/*`：这些页面描述的是本仓库自有的教学版，与 Pi 源码路径无关，核对后仍准确。
+- 验证：
+  - `npm run docs:build` 成功。
+  - `git diff --check` 成功。
+
+### 34. 流程图 mermaid → PNG 预渲染
+
+- 需求：把文档里所有 mermaid 流程图转成 PNG 插入文档，且文字不能被裁剪或被行距压住。
+- 实现：
+  - 新增 `scripts/mermaid-to-png.mjs`：抽取 `docs/**/*.md` 的 mermaid 代码块 → 用本机 Chrome（puppeteer-core）离线渲染 → 写入 `docs/public/diagrams/<page>-<n>.png` → 把代码块替换成 `[![alt](/diagrams/x.png)](/diagrams/x.png)`。
+  - 原始 mermaid 源码另存到 `specs/mermaid-sources/<slug>.mmd`，方便后续改图重出。
+  - 新增 npm 脚本：`docs:diagrams`（抽取+渲染+回填）、`docs:diagrams:render`（按 .mmd 源码重渲染）。
+  - 可读性三项保护：SVG viewBox 扩到内容外接框（防边界裁剪）、标签行距 1.5（防多行贴住）、消息文字白色描边（paint-order: stroke，防时序图生命线割裂文字）。
+- 结果：50 张图全部转换；`docs` 下已无 mermaid 代码块，页面里没有客户端 mermaid 渲染。
+- 修复记录：
+  - `project/extend.md`、`project/frontend.md` 的时序图把参与者命名为 `Loop`，被 mermaid 当成 `loop` 关键字导致解析失败（这两张图此前在站点上就是渲染不出来的），已改名为 `AgentLoop`。
+  - `concepts/message-and-stream` 状态图两条边标签过长互相压盖，且 stateDiagram 不解析 `\n`，已把标签缩短为 `emits toolCall` / `append toolResult`。
+- 验收：
+  - 像素级边缘检查：50 张全部 ≥8px 留白，无内容贴边。
+  - visual-judge 分批验收 50 张：修复后全部 pass（含时序图描边、状态图标签分离的复审）。
+  - `npm run docs:build` 成功，`docs/.vitepress/dist/diagrams/` 含 50 张 PNG。

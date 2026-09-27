@@ -4,19 +4,7 @@
 
 ## 总览
 
-```mermaid
-flowchart LR
-  D1["Demo 1\n最小循环"] --> L["server/agent/loop.ts"]
-  D2["Demo 2\n工具调用"] --> T["server/agent/tools.ts"]
-  D3["Demo 3\n会话树"] --> S["server/agent/sessionStore.ts"]
-  D4["Demo 4\n压缩"] --> S
-  D5["Demo 5\n真模型烟测"] --> M["OpenAI-compatible adapter"]
-  M --> L
-  L --> API["server/index.ts"]
-  T --> API
-  S --> API
-  API --> UI["client/App.tsx"]
-```
+[![总览 流程图](/diagrams/project-code-map-1.png)](/diagrams/project-code-map-1.png)
 
 ## 对照表
 

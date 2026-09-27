@@ -1,0 +1,11 @@
+flowchart TB
+    B1["bundle 1 patch<br>dsh-base/cordis.patch.yml<br>≈78 条插件行"] --> M
+    B2["bundle 2 patch<br>dsh-web-app/cordis.patch.yml"] --> M
+    P["profile patch<br>profiles/web/cordis.patch.yml"] --> M
+    H["home patch<br>~/.dsh/cordis.patch.yml"] --> M
+    C["--patch 覆盖层"] --> M
+    T["遥测开关 patch<br>DSH_TELEMETRY_DISABLED"] --> M
+    M["合成配置树"] --> R["Loader 逐行挂载"]
+
+
+

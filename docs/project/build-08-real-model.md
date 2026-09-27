@@ -52,28 +52,9 @@ Demo 会做两件事：
 
 从工程角度看，它其实在演示一个小 adapter：
 
-```mermaid
-flowchart LR
-  A["OpenAI-compatible response"] --> B["toTeachingAssistantMessage()"]
-  B --> C["AssistantMessage"]
-  C --> D["runAgentLoop contract"]
-  E["ToolResultMessage"] --> F["OpenAI tool message"]
-  F --> A
-```
+[![运行方式 流程图](/diagrams/project-build-08-real-model-1.png)](/diagrams/project-build-08-real-model-1.png)
 
-```mermaid
-sequenceDiagram
-  participant Demo as demo:05
-  participant LLM as OpenAI-compatible API
-  participant Tool as local list_files
-
-  Demo->>LLM: messages + tools
-  LLM-->>Demo: assistant tool_call
-  Demo->>Tool: execute list_files
-  Tool-->>Demo: README.md / agent-notes.md
-  Demo->>LLM: assistant tool_call + tool result
-  LLM-->>Demo: final answer
-```
+[![运行方式 流程图 2](/diagrams/project-build-08-real-model-2.png)](/diagrams/project-build-08-real-model-2.png)
 
 ## 为什么不把它接进默认教学项目
 
@@ -180,18 +161,7 @@ OpenAI-compatible 下一轮要看到的是 `tool` message：
 
 真实产品通常不会等完整 response，而是消费 stream。你可以把流式 adapter 想成一个 builder：
 
-```mermaid
-flowchart TD
-  A["delta.content"] --> B["append text buffer"]
-  C["delta.tool_calls[i].function.name"] --> D["remember tool name"]
-  E["delta.tool_calls[i].function.arguments"] --> F["append argument buffer"]
-  B --> G["message_update"]
-  D --> G
-  F --> G
-  G --> H{"finish_reason?"}
-  H -->|"tool_calls"| I["emit AssistantMessage with toolCall blocks"]
-  H -->|"stop"| J["emit AssistantMessage with text blocks"]
-```
+[![流式 delta 怎么拼 流程图](/diagrams/project-build-08-real-model-3.png)](/diagrams/project-build-08-real-model-3.png)
 
 最容易错的是 tool arguments：流式返回时它可能是一段段 JSON 字符串，不能每次 delta 都 `JSON.parse`。正确做法是先按 `tool_call.id/index` 累积，finish 后再 parse。
 

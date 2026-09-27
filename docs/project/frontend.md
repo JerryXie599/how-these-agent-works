@@ -40,20 +40,7 @@ const source = new EventSource(`/api/runs/${runId}/events`);
 
 `POST /api/prompt` 仍然可以用于 curl 调试；浏览器默认走 SSE。每收到一个 `message_start`、`message_update`、`tool_execution_start/end`，前端就把事件追加到时间线，并用消息事件增量更新聊天区。收到 `run_done` 后，再用完整 session 覆盖本地状态，避免增量过程中漏掉 entry 或工具列表变化。
 
-```mermaid
-sequenceDiagram
-  participant UI as React
-  participant API as Express
-  participant Loop as runAgentLoop
-
-  UI->>API: POST /api/runs
-  API-->>UI: runId
-  UI->>API: GET /api/runs/:id/events
-  API->>Loop: runAgentLoop(onEvent)
-  Loop-->>API: AgentEvent
-  API-->>UI: SSE AgentEvent
-  API-->>UI: run_done + full session
-```
+[![状态模型 流程图](/diagrams/project-frontend-1.png)](/diagrams/project-frontend-1.png)
 
 ## 为什么展示事件时间线
 

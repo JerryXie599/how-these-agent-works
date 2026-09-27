@@ -33,24 +33,22 @@ Pi 的 session entry 不只包括消息。不同 entry 负责恢复不同维度�
 | `thinking_level_change` | 恢复 reasoning 设置 |
 | `compaction` | 用摘要替代旧上下文 |
 | `branch_summary` | 切换分支时携带离开分支的发现 |
+| `context_edit` | v0.87 新增：对某条消息做“省略/替换”而不改写原始历史，用于编辑模型上下文 |
 | `custom` | 扩展保存自己的状态 |
 | `custom_message` | 扩展注入可进入上下文的消息 |
 | `label` / `session_info` | UI 和会话管理信息 |
 
 很多教学项目只保存 `role/content`，这对玩具聊天没问题，但一旦要恢复真实 Agent 行为，就会不够。
 
+::: tip 版本说明
+`packages/coding-agent/src/core/session-manager.ts` 里 `CURRENT_SESSION_VERSION = 3`，教程里“v3、`id`/`parentId` 树”的说法对当前主线仍然成立。下一代 `AgentHarness`（`packages/agent/src/harness/session/`）则升级为 v4 lane-based JSONL（`JsonlSessionRepo`，每个分支是一条 lane），并保留 `legacy-v3` 读取器来迁移旧文件。两种模型的学习主线一致：稳定 `id`、`parentId`、当前 leaf，append-only JSONL。
+:::
+
 ## 从 leaf 构建上下文
 
 构建上下文时，Pi 不是读取文件里的所有 message，而是从当前 `leafId` 沿 `parentId` 回到根，再反转。
 
-```mermaid
-flowchart TD
-  U1["u1: 用户问题"] --> A1["a1: 初始方案"]
-  A1 --> U2["u2: 继续方案 A"]
-  U2 --> A2["a2: A 结果"]
-  A1 --> U3["u3: 改走方案 B"]
-  U3 --> A3["a3: B 结果"]
-```
+[![从 leaf 构建上下文 流程图](/diagrams/source-session-compaction-1.png)](/diagrams/source-session-compaction-1.png)
 
 如果当前 leaf 是 `a3`，上下文路径是 `u1 -> a1 -> u3 -> a3`。`u2 -> a2` 仍在文件里，但不属于当前分支。
 
@@ -74,13 +72,7 @@ function buildPath(leafId: string, entries: Map<string, Entry>) {
 
 上下文压缩经常被误解成“删掉旧消息”。Pi 的设计更像追加一条新的摘要 entry：
 
-```mermaid
-flowchart LR
-  A["旧消息范围"] --> B["summarizer model"]
-  B --> C["CompactionEntry"]
-  C --> D["summary + recent messages"]
-  D --> E["next model request"]
-```
+[![压缩不是删除历史 流程图](/diagrams/source-session-compaction-2.png)](/diagrams/source-session-compaction-2.png)
 
 关键点有三个：
 
@@ -100,16 +92,7 @@ contextTokens > contextWindow - reserveTokens
 
 默认策略会预留一段响应空间，再向前选择 cut point，并保留最近一段消息。保留最近消息非常重要，因为最新工具输出、错误日志和用户约束通常不能只靠摘要。
 
-```mermaid
-flowchart TB
-  A["估算上下文 token"] --> B{"超过阈值?"}
-  B -->|"否"| C["继续请求模型"]
-  B -->|"是"| D["向前选择 cut point"]
-  D --> E["提取待摘要消息"]
-  E --> F["生成结构化 summary"]
-  F --> G["append CompactionEntry"]
-  G --> H["reload session context"]
-```
+[![什么时候压缩 流程图](/diagrams/source-session-compaction-3.png)](/diagrams/source-session-compaction-3.png)
 
 ## branch summary 和 compaction 的区别
 
@@ -129,6 +112,7 @@ flowchart TB
 | `packages/coding-agent/src/core/compaction/branch-summarization.ts` | 分支切换时如何生成 summary |
 | `packages/coding-agent/src/core/compaction/utils.ts` | 消息序列化、文件操作追踪、summary prompt |
 | `packages/coding-agent/src/core/messages.ts` | compaction/custom/branch summary 如何变成 AgentMessage |
+| `packages/agent/src/harness/session/` + `packages/agent/src/harness/compaction/` | 下一代：v4 lane-based 会话与同款压缩实现 |
 
 读源码时，重点看两个转换：
 

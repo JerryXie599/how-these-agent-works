@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CyberStrike 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/cyberstrike-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：操作到模型",
+        "focus": [
+          "user",
+          "clients",
+          "server",
+          "agents",
+          "providers"
+        ],
+        "note": "opencode 继承的骨架：TUI/Web → server → 安全智能体 → 15+ 模型供应商。"
+      },
+      {
+        "id": "proxy-pipeline",
+        "label": "代理测试流水线",
+        "focus": [
+          "agents",
+          "proxy",
+          "perm",
+          "tools",
+          "bolt"
+        ],
+        "note": "hackbrowser 捕获 → 分析 → 编排器派发 8 个测试器，发包只走可审计通道。"
+      },
+      {
+        "id": "knowledge-report",
+        "label": "技能注入与报告",
+        "focus": [
+          "skills",
+          "server",
+          "report",
+          "methodology"
+        ],
+        "note": "7,662 个技能文件按需加载；报告由会话数据确定性汇编。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "测试者",
+      "sublabel": "授权目标",
+      "pos": [
+        15,
+        300
+      ],
+      "size": [
+        90,
+        62
+      ]
+    },
+    {
+      "id": "clients",
+      "type": "frontend",
+      "label": "TUI · Web",
+      "sublabel": "opencode 继承",
+      "pos": [
+        140,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "server",
+      "type": "backend",
+      "label": "server + 会话库",
+      "sublabel": "Hono · SQLite",
+      "pos": [
+        300,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "agents",
+      "type": "backend",
+      "label": "安全智能体",
+      "sublabel": "23 个安全角色",
+      "pos": [
+        455,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "backend",
+      "label": "代理测试流水线",
+      "sublabel": "捕获→分析→8 测试器",
+      "pos": [
+        620,
+        300
+      ],
+      "size": [
+        135,
+        62
+      ]
+    },
+    {
+      "id": "providers",
+      "type": "external",
+      "label": "模型供应商",
+      "sublabel": "15+ · opencode 继承",
+      "pos": [
+        790,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "报告生成",
+      "sublabel": "汇编 + AI 补写",
+      "pos": [
+        140,
+        120
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "skills",
+      "type": "database",
+      "label": "技能库",
+      "sublabel": "7,662 个 SKILL.md",
+      "pos": [
+        140,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "methodology",
+      "type": "backend",
+      "label": "方法论引擎",
+      "sublabel": "阶段 · 链 · 情报 · 校验",
+      "pos": [
+        455,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "perm",
+      "type": "security",
+      "label": "权限纪律",
+      "sublabel": "测试器封直连发包",
+      "pos": [
+        605,
+        490
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "工具注册表",
+      "sublabel": "60+ · 审计发包通道",
+      "pos": [
+        760,
+        490
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "bolt",
+      "type": "external",
+      "label": "Bolt 远程工具",
+      "sublabel": "Ed25519 · MCP/HTTPS",
+      "pos": [
+        915,
+        490
+      ],
+      "size": [
+        115,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "执行通道",
+      "wraps": [
+        "perm",
+        "tools"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "clients",
+      "label": "操作"
+    },
+    {
+      "from": "clients",
+      "to": "server",
+      "label": "REST / SSE",
+      "labelAt": [
+        282,
+        290
+      ]
+    },
+    {
+      "from": "server",
+      "to": "agents",
+      "label": "简报与会话",
+      "variant": "emphasis",
+      "labelAt": [
+        437,
+        290
+      ]
+    },
+    {
+      "from": "agents",
+      "to": "proxy",
+      "label": "派发测试",
+      "variant": "emphasis",
+      "labelAt": [
+        602,
+        290
+      ]
+    },
+    {
+      "from": "agents",
+      "to": "providers",
+      "label": "模型调用",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          520,
+          240
+        ],
+        [
+          850,
+          240
+        ]
+      ],
+      "labelAt": [
+        660,
+        233
+      ]
+    },
+    {
+      "from": "server",
+      "to": "report",
+      "label": "数据汇编",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          360,
+          240
+        ],
+        [
+          205,
+          240
+        ]
+      ],
+      "labelAt": [
+        282,
+        233
+      ]
+    },
+    {
+      "from": "skills",
+      "to": "server",
+      "label": "SKILL.md 按需加载",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          205,
+          440
+        ],
+        [
+          360,
+          440
+        ]
+      ],
+      "labelAt": [
+        268,
+        433
+      ]
+    },
+    {
+      "from": "agents",
+      "to": "methodology",
+      "label": "情报 · 阶段 · 校验",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        520,
+        425
+      ]
+    },
+    {
+      "from": "proxy",
+      "to": "perm",
+      "label": "调用前检查",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          687.5,
+          430
+        ],
+        [
+          665,
+          430
+        ]
+      ],
+      "labelAt": [
+        660,
+        423
+      ]
+    },
+    {
+      "from": "perm",
+      "to": "tools",
+      "label": "放行"
+    },
+    {
+      "from": "tools",
+      "to": "bolt",
+      "label": "远程执行",
+      "labelAt": [
+        895,
+        480
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "opencode 的骨架",
+      "items": [
+        "约 290 个文件逐字节继承：provider、会话库、server、权限 Ruleset",
+        "本图重点画安全特化部分，继承部分在 opencode 章节已拆"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "权限当攻击面纪律",
+      "items": [
+        "测试器被封掉直连发包通道，只许走可审计的 http_replay",
+        "编排器零权限：只能委派与读，不能写结论"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "提示词即数据",
+      "items": [
+        "125 个 WSTG 用例 + 7,662 个技能文件，静态注入或运行时加载",
+        "技能带 Ed25519 签名，分 official / community / unverified / tampered"
+      ]
+    }
+  ]
+}

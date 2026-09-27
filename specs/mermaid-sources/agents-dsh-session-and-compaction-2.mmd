@@ -1,0 +1,16 @@
+flowchart TB
+    subgraph L1[第一层：工具结果裁剪（无模型）]
+        A[tool result 超过 8192 字符] --> B[重写为<br>头 4096 + 省略标记 + 尾 1024]
+        B --> C[原始事件仍在日志里<br>replay 安全]
+    end
+    subgraph L2[第二层：LLM 摘要（压力驱动）]
+        D{tokenMeter<br>压力达到 thresholdRatio 0.8?}
+        D -- 是 --> E[重放会话前缀<br>复用 KV cache]
+        E --> F[一次 llm.stream 生成摘要]
+        F --> G[摘要以标记消息<br>替换旧表面]
+        G --> H[保留尾部 retainRatio 0.16]
+    end
+    L1 --> L2
+
+
+

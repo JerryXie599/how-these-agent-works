@@ -1,0 +1,6 @@
+flowchart LR
+    A[默认基线<br>*: allow<br>read *.env: ask<br>external_directory: ask] --> B[agent 特有规则]
+    B --> C[用户配置覆盖]
+    C --> D[生效 Ruleset]
+
+

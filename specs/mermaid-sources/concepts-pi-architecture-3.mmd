@@ -1,0 +1,17 @@
+flowchart LR
+  A["UserMessage"] --> B["AgentMessage[]"]
+  B --> C["convertToLlm"]
+  C --> D["Message[]"]
+  D --> E["Models.stream"]
+  E --> F["AssistantMessageEvent"]
+  F --> G["AssistantMessage"]
+  G --> H{"toolCall?"}
+  H -->|"yes"| I["AgentToolResult"]
+  I --> J["ToolResultMessage"]
+  J --> B
+  H -->|"no"| K["agent_end"]
+
+
+
+
+

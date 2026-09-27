@@ -1,0 +1,13 @@
+stateDiagram-v2
+    state "空闲" as Idle
+    state "已派任务" as Tasked
+    state "执行中" as Executing
+    state "冷却" as Cooldown
+    state "已烧毁" as Burned
+    [*] --> Idle
+    Idle --> Tasked: assignTask()
+    Tasked --> Executing: 开始执行
+    Executing --> Cooldown: 任务完成
+    Cooldown --> Idle: 冷却结束
+    Executing --> Burned: 检测风险超阈值
+

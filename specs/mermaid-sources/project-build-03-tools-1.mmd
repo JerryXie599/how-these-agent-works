@@ -1,0 +1,11 @@
+flowchart LR
+  A["Model"] --> B["toolCall JSON"]
+  B --> C["ToolRegistry"]
+  C --> D["validate / guard"]
+  D --> E["execute local effect"]
+  E --> F["toolResult message"]
+
+
+
+
+

@@ -1,0 +1,17 @@
+flowchart TD
+  A["session.prompt(text)"] --> B{"extension command?"}
+  B -->|"yes"| C["execute command"]
+  B -->|"no"| D["input hooks"]
+  D --> E["expand skill/template"]
+  E --> F{"isStreaming?"}
+  F -->|"yes"| G["queue steer/followUp"]
+  F -->|"no"| H["check model/auth"]
+  H --> I["optional compaction"]
+  I --> J["build messages"]
+  J --> K["before_agent_start hooks"]
+  K --> L["agent.prompt(messages)"]
+
+
+
+
+

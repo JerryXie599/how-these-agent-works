@@ -1,0 +1,23 @@
+flowchart TB
+    subgraph FE[控制台 frontend/]
+        A[React 18 + TS + Vite<br>d3-force 攻击图渲染]
+    end
+    subgraph BE[后端 backend/atkbrain/]
+        B[API + WebSocket<br>FastAPI · 事件总线]
+        C[引擎 engine/<br>自循环 · 猎钟 · 监督]
+        D[图 graph/<br>攻击图 store 3666 行]
+        E[守卫 exec/ + scope/<br>四道闸]
+        F[记忆 memory/ + 报告 report/]
+    end
+    subgraph RT[运行时]
+        G[Pi 子进程池<br>--mode rpc]
+        H[扩展桥 atkbrain-tools.ts]
+    end
+    A <--> B
+    B --> C
+    C --> G
+    G --- H
+    H --> E
+    C --> D
+    C --> F
+

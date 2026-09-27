@@ -1,0 +1,9 @@
+flowchart TB
+    A["Markdown 即配置<br>{agent,agents}/*.md<br>{command,commands}/*.md"] --> C[配置发现与合并]
+    B["代码即扩展<br>{tool,tools}/*.ts<br>{plugin,plugins}/*.ts"] --> C
+    D["plugin 字段：npm / 本地 / git"] --> C
+    E["MCP：local stdio / remote OAuth"] --> C
+    F["LSP：语言服务"] --> C
+    C --> G[运行时：工具表 · agent 表 · 命令表]
+
+

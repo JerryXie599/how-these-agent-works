@@ -1,0 +1,25 @@
+sequenceDiagram
+  participant AgentLoop as Agent Loop
+  participant Model as LLM
+  participant Hook as Hooks
+  participant Tool as Tool
+  participant Ctx as Context
+
+  AgentLoop->>Model: messages + tools
+  Model-->>AgentLoop: assistant content: toolCall
+  AgentLoop->>AgentLoop: find tool by name
+  AgentLoop->>AgentLoop: prepareArguments 兼容参数
+  AgentLoop->>AgentLoop: validateToolArguments 校验 schema
+  AgentLoop->>Hook: beforeToolCall
+  Hook-->>AgentLoop: allow / block / rewrite
+  AgentLoop->>Tool: execute(toolCallId, params, signal)
+  Tool-->>AgentLoop: AgentToolResult
+  AgentLoop->>Hook: afterToolCall
+  Hook-->>AgentLoop: optional override / terminate
+  AgentLoop->>Ctx: append toolResult
+  AgentLoop->>Model: next request
+
+
+
+
+

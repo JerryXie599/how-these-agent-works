@@ -1,0 +1,15 @@
+flowchart TB
+  UI["React UI"] --> API["Express API"]
+  API --> Store["JsonlSessionStore"]
+  API --> Loop["runAgentLoop"]
+  Loop --> Model["MockModel"]
+  Loop --> Tools["ToolRegistry"]
+  Tools --> Workspace["workspace files"]
+  Loop --> Events["AgentEvent[]"]
+  Store --> Context["buildContext()"]
+  Context --> Loop
+
+
+
+
+

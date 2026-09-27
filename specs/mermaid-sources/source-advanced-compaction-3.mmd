@@ -1,0 +1,12 @@
+flowchart TD
+  U["user: 修复失败测试"] --> A1["assistant: 分析并调用 read"]
+  A1 --> T1["toolResult: 大文件内容"]
+  T1 --> A2["assistant: 调用 test"]
+  A2 --> T2["toolResult: 长日志"]
+  T2 --> A3["assistant: 调用 edit"]
+  A3 --> T3["toolResult: diff"]
+
+
+
+
+

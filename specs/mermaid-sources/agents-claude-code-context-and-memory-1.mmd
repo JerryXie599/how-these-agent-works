@@ -1,0 +1,16 @@
+flowchart TB
+    subgraph ctx[发给模型的上下文]
+        SP[系统提示<br>工具说明 + 安全规则]
+        CM[CLAUDE.md / AGENTS.md<br>项目约定与偏好]
+        AM[auto memory<br>MEMORY.md 索引 + 主题文件]
+        HIST[会话历史<br>消息 + tool result]
+        SK[技能与提示模板<br>按需展开]
+    end
+    DISK[("~/.claude/ 与项目目录")]
+    DISK --> CM
+    DISK --> AM
+    DISK --> SK
+    DISK --> HIST
+
+
+

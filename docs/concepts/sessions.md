@@ -19,9 +19,9 @@ JSONL 的每一行都是一个独立 JSON 对象。
 ```
 
 ::: tip 真实 Pi 与教学版的版本号
-Pi 官方 Session Format 文档说明当前 session header 会迁移到 `version: 3`：v1 是早期线性 entry，v2 引入 `id` / `parentId` 树结构，v3 统一了扩展消息命名。本教程的教学版协议故意使用 `version: 1`，只是表示“教学版文件格式第 1 版”，不是在复刻 Pi 的真实版本号。
+Pi 当前主线的 `SessionManager`（`packages/coding-agent/src/core/session-manager.ts`）使用 `version: 3`：v1 是早期线性 entry，v2 引入 `id` / `parentId` 树结构，v3 统一了扩展消息命名。本教程的教学版协议故意使用 `version: 1`，只是表示“教学版文件格式第 1 版”，不是在复刻 Pi 的真实版本号。
 
-两者的学习主线是一致的：稳定 `id`、`parentId`、当前 `leafId`，以及通过 JSONL append 保存历史。
+新一代 `AgentHarness`（`packages/agent/src/harness/session/`）已升级为 v4 lane-based JSONL，并保留 `legacy-v3` 读取器。两者的学习主线是一致的：稳定 `id`、`parentId`、当前 `leafId`，以及通过 JSONL append 保存历史。
 :::
 
 它的好处是：
@@ -35,14 +35,7 @@ Pi 官方 Session Format 文档说明当前 session header 会迁移到 `version
 
 ## 树结构
 
-```mermaid
-flowchart TD
-  A["u1: 初始问题"] --> B["a1: 方案 A"]
-  B --> C["u2: 继续方案 A"]
-  C --> D["a2: A 的结果"]
-  B --> E["u3: 改走方案 B"]
-  E --> F["a3: B 的结果"]
-```
+[![树结构 流程图](/diagrams/concepts-sessions-1.png)](/diagrams/concepts-sessions-1.png)
 
 如果当前 leaf 是 `D`，上下文就是 `A -> B -> C -> D`。当你跳回 `B` 并提交新用户消息，就产生 `E -> F` 这条新分支。旧分支不会丢。
 
@@ -68,13 +61,7 @@ Pi 的 `/tree` 有一个很妙的交互：如果你选中一条用户消息，�
 
 这样你可以改写原问题，然后重新提交，形成一条新分支。
 
-```mermaid
-flowchart LR
-  A["选中 user message"] --> B["leaf = parentId"]
-  B --> C["用户消息文本回填到编辑器"]
-  C --> D["编辑后重新提交"]
-  D --> E["产生新分支"]
-```
+[![分支时用户消息怎么处理 流程图](/diagrams/concepts-sessions-2.png)](/diagrams/concepts-sessions-2.png)
 
 ## 分支摘要
 
@@ -93,6 +80,7 @@ Pi 的 session file 里不只有 `message`。它还会记录模型切换、think
 | `thinking_level_change` | 恢复 reasoning 设置 |
 | `compaction` | 长会话用摘要替代旧消息 |
 | `branch_summary` | 分支跳转后携带离开分支的经验 |
+| `context_edit` | v0.87 新增：省略/替换单条消息而不改写原始历史 |
 | `custom` / `custom_message` | 扩展持久化自己的状态或注入上下文 |
 
 教学版只实现 `message` 和最小 `compaction`，但类型上保留了继续扩展的空间。

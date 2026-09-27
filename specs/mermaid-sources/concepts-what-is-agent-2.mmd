@@ -1,0 +1,23 @@
+sequenceDiagram
+  participant User as 用户
+  participant Agent as Agent Loop
+  participant LLM as 大模型
+  participant Tool as 文件工具
+
+  User->>Agent: 修正文档安装命令
+  Agent->>LLM: 目标 + 当前消息 + 可用工具
+  LLM-->>Agent: toolCall read(README.md)
+  Agent->>Tool: 读取 README.md
+  Tool-->>Agent: 文件内容
+  Agent->>LLM: 工具结果
+  LLM-->>Agent: toolCall edit(README.md)
+  Agent->>Tool: 修改文件
+  Tool-->>Agent: 修改结果
+  Agent->>LLM: 工具结果
+  LLM-->>Agent: 总结完成情况
+  Agent-->>User: 已修正，并说明验证方式
+
+
+
+
+

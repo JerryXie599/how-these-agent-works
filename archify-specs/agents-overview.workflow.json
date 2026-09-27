@@ -1,0 +1,322 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "同一个循环：七个项目",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/public/archify/agents-overview.html",
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "主路径",
+        "focus": [
+          "user",
+          "surface",
+          "assemble",
+          "model",
+          "gate",
+          "execute",
+          "reply"
+        ],
+        "note": "从下达任务到最终回复的主路径，七个项目形状一致。"
+      },
+      {
+        "id": "gate-detail",
+        "label": "闸门与拒绝",
+        "focus": [
+          "gate",
+          "model",
+          "execute"
+        ],
+        "note": "权限、审批与 hooks 拦截 risky 调用，拒绝结果回写给模型重新决策。"
+      },
+      {
+        "id": "memory-detail",
+        "label": "持久化与压缩",
+        "focus": [
+          "memory",
+          "compact",
+          "assemble"
+        ],
+        "note": "会话先落盘再参与循环，上下文接近上限时压缩后继续。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "ui",
+      "label": "用户与界面"
+    },
+    {
+      "id": "runtime",
+      "label": "Agent 运行时"
+    },
+    {
+      "id": "govern",
+      "label": "权限闸门 · 记忆与持久化",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "intake",
+      "label": "接入",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "loop",
+      "label": "循环：直到任务完成",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "emphasis"
+    },
+    {
+      "id": "deliver",
+      "label": "交付",
+      "fromCol": 5,
+      "toCol": 5
+    }
+  ],
+  "groups": [
+    {
+      "id": "context_group",
+      "label": "上下文组装",
+      "lane": "runtime",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "user",
+    "surface",
+    "assemble",
+    "model",
+    "gate",
+    "execute"
+  ],
+  "semanticChecks": {
+    "allowedRoots": [
+      "user",
+      "compact"
+    ],
+    "requiredPaths": [
+      {
+        "from": "user",
+        "to": "surface"
+      },
+      {
+        "from": "surface",
+        "to": "assemble"
+      },
+      {
+        "from": "assemble",
+        "to": "model"
+      },
+      {
+        "from": "model",
+        "to": "gate"
+      },
+      {
+        "from": "gate",
+        "to": "execute"
+      }
+    ],
+    "requiredEdges": [
+      {
+        "from": "execute",
+        "to": "model"
+      },
+      {
+        "from": "model",
+        "to": "reply"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "user",
+      "lane": "ui",
+      "col": 0,
+      "type": "external",
+      "label": "用户",
+      "sublabel": "下达任务",
+      "width": 120
+    },
+    {
+      "id": "surface",
+      "lane": "ui",
+      "col": 1,
+      "type": "frontend",
+      "label": "界面入口",
+      "sublabel": "TUI · Web · IDE",
+      "width": 120
+    },
+    {
+      "id": "reply",
+      "lane": "ui",
+      "col": 5,
+      "type": "backend",
+      "label": "回复与后续",
+      "sublabel": "答案 · 变更 · 追问",
+      "width": 120
+    },
+    {
+      "id": "assemble",
+      "lane": "runtime",
+      "col": 2,
+      "type": "backend",
+      "label": "组装上下文",
+      "sublabel": "记忆 · 规则 · 技能",
+      "tag": "每轮重建",
+      "width": 120
+    },
+    {
+      "id": "model",
+      "lane": "runtime",
+      "col": 3,
+      "type": "cloud",
+      "label": "模型 API",
+      "sublabel": "流式 tool_use",
+      "width": 120
+    },
+    {
+      "id": "gate",
+      "lane": "govern",
+      "col": 3,
+      "type": "security",
+      "label": "权限闸门",
+      "sublabel": "审批 · 沙箱 · hooks",
+      "width": 120
+    },
+    {
+      "id": "execute",
+      "lane": "runtime",
+      "col": 4,
+      "type": "messagebus",
+      "label": "执行工具",
+      "sublabel": "读写 · 命令 · 网络",
+      "tag": "结果回写再循环",
+      "width": 120
+    },
+    {
+      "id": "memory",
+      "lane": "govern",
+      "col": 0,
+      "type": "database",
+      "label": "会话持久化",
+      "sublabel": "JSONL · 恢复 · 分支",
+      "width": 120
+    },
+    {
+      "id": "compact",
+      "lane": "govern",
+      "col": 2,
+      "type": "database",
+      "label": "上下文压缩",
+      "sublabel": "接近上限时摘要",
+      "width": 120
+    }
+  ],
+  "edges": [
+    {
+      "id": "user-surface",
+      "from": "user",
+      "to": "surface"
+    },
+    {
+      "id": "surface-assemble",
+      "from": "surface",
+      "to": "assemble",
+      "label": "任务 + 历史",
+      "variant": "emphasis"
+    },
+    {
+      "id": "assemble-model",
+      "from": "assemble",
+      "to": "model",
+      "label": "统一消息",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-gate",
+      "from": "model",
+      "to": "gate",
+      "label": "tool_use 请求",
+      "variant": "security"
+    },
+    {
+      "id": "gate-execute",
+      "from": "gate",
+      "to": "execute",
+      "label": "放行",
+      "variant": "emphasis"
+    },
+    {
+      "id": "execute-model",
+      "from": "execute",
+      "to": "model",
+      "label": "结果回写",
+      "role": "return"
+    },
+    {
+      "id": "model-reply",
+      "from": "model",
+      "to": "reply",
+      "label": "最终回复",
+      "role": "return"
+    },
+    {
+      "id": "surface-memory",
+      "from": "surface",
+      "to": "memory",
+      "label": "每轮落盘",
+      "variant": "dashed"
+    },
+    {
+      "id": "memory-assemble",
+      "from": "memory",
+      "to": "assemble",
+      "label": "恢复上下文",
+      "variant": "dashed"
+    },
+    {
+      "id": "compact-assemble",
+      "from": "compact",
+      "to": "assemble",
+      "label": "摘要后继续",
+      "variant": "dashed",
+      "role": "branch",
+      "route": "drop"
+    },
+    {
+      "id": "gate-model",
+      "from": "gate",
+      "to": "model",
+      "label": "拒绝回写",
+      "role": "error",
+      "variant": "dashed",
+      "route": "drop"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "七个项目，一个形状",
+      "items": [
+        "pi、Claude Code、dsh、opencode、atkbrain、t3mp3st、cyberstrike 是同一循环的不同工程化包装",
+        "差异集中在界面、权限闸门的严格程度与持久化格式"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "读源码时抓主线",
+      "items": [
+        "先追主路径，再看闸门怎么拦、循环怎么退出",
+        "持久化与压缩服务于长会话，不属于核心循环"
+      ]
+    }
+  ]
+}

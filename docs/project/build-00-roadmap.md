@@ -6,18 +6,7 @@
 
 ## 你要做出的系统
 
-```mermaid
-flowchart TB
-  UI["React UI"] --> API["Express API"]
-  API --> Store["JsonlSessionStore"]
-  API --> Loop["runAgentLoop"]
-  Loop --> Model["MockModel"]
-  Loop --> Tools["ToolRegistry"]
-  Tools --> Workspace["workspace files"]
-  Loop --> Events["AgentEvent[]"]
-  Store --> Context["buildContext()"]
-  Context --> Loop
-```
+[![你要做出的系统 流程图](/diagrams/project-build-00-roadmap-1.png)](/diagrams/project-build-00-roadmap-1.png)
 
 最小闭环是：
 

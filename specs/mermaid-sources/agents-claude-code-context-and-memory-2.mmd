@@ -1,0 +1,12 @@
+flowchart LR
+    A[会话变长] --> B{接近窗口上限?}
+    B -- 否 --> C[继续循环]
+    B -- 是 --> D[PreCompact hook]
+    D --> E[把旧对话摘要成<br>一段总结]
+    E --> F[摘要替换旧历史<br>文件类工作照常保留]
+    F --> G[PostCompact hook]
+    G --> C
+    H["/compact 手动触发"] --> D
+
+
+

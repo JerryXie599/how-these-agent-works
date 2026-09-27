@@ -1,0 +1,10 @@
+flowchart LR
+    A[冻结参数快照] --> B[pre-execute 门<br>allow / deny<br>审批 ctx.approval 在此接入]
+    B --> C[单调 guards<br>先读后写 · 版本守卫]
+    C --> D[execute<br>around 包装: 超时 / 重试 / 指标]
+    D --> E[post-execute]
+    E --> F[finalizeContent<br>工具自定义结果整理]
+    F --> G[result 事件<br>观察型钩子]
+
+
+

@@ -13,14 +13,17 @@ type Message = UserMessage | AssistantMessage | ToolResultMessage;
 
 interface UserMessage {
   role: "user";
-  content: string | ContentBlock[];
+  content: string | (TextContent | ImageContent)[];
   timestamp: number;
 }
 
 interface AssistantMessage {
   role: "assistant";
-  content: Array<TextBlock | ThinkingBlock | ToolCallBlock>;
-  stopReason: "stop" | "length" | "toolUse" | "error" | "aborted";
+  content: Array<TextContent | ThinkingContent | ToolCall>;
+  api: Api;                 // v0.87 起携带本次回复来自哪家 API/provider/model
+  provider: ProviderId;
+  model: string;
+  stopReason: "pending" | "stop" | "length" | "toolUse" | "error" | "aborted" | "deferred";
   usage: Usage;
   timestamp: number;
 }
@@ -29,7 +32,8 @@ interface ToolResultMessage {
   role: "toolResult";
   toolCallId: string;
   toolName: string;
-  content: ContentBlock[];
+  content: (TextContent | ImageContent)[];
+  details?: JsonValue;      // 结构化细节，便于扩展和审计
   isError: boolean;
   timestamp: number;
 }
@@ -56,17 +60,7 @@ interface ToolResultMessage {
 
 ## 状态机视角
 
-```mermaid
-stateDiagram-v2
-  [*] --> Idle
-  Idle --> Streaming: prompt()
-  Streaming --> ExecutingTools: assistant emits toolCall
-  ExecutingTools --> Streaming: append toolResult and continue
-  Streaming --> Idle: assistant stop
-  Streaming --> Aborted: abort()
-  ExecutingTools --> Aborted: abort()
-  Aborted --> Idle: settle listeners
-```
+[![状态机视角 流程图](/diagrams/concepts-message-and-stream-1.png)](/diagrams/concepts-message-and-stream-1.png)
 
 Pi 的 `Agent` 类会维护这些状态：
 
@@ -95,13 +89,7 @@ Pi 的 `Agent` 类会维护这些状态：
 
 正确做法是：
 
-```mermaid
-flowchart LR
-  A["assistant: toolCall"] --> B["execute tool"]
-  B --> C["toolResult message"]
-  C --> D["append to context"]
-  D --> E["next model request"]
-```
+[![工具结果也必须是消息 流程图](/diagrams/concepts-message-and-stream-2.png)](/diagrams/concepts-message-and-stream-2.png)
 
 ## 小练习
 

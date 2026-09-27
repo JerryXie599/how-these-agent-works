@@ -1,0 +1,13 @@
+flowchart TB
+  A["完整历史消息"] --> B["估算 token"]
+  B --> C{"超过阈值?"}
+  C -->|"否"| D["继续正常请求"]
+  C -->|"是"| E["选择 cut point"]
+  E --> F["总结旧消息"]
+  F --> G["append CompactionEntry"]
+  G --> H["上下文 = summary + recent messages"]
+
+
+
+
+

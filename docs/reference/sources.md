@@ -23,15 +23,18 @@
 | 源码 | 教程中对应内容 |
 | --- | --- |
 | [earendil-works/pi](https://github.com/earendil-works/pi) | Pi monorepo 总览 |
-| `packages/ai/src/types.ts` | `Message`、`ToolCall`、`AssistantMessageEvent` |
-| `packages/ai/src/stream.ts` | `streamSimple()` 统一模型调用入口 |
-| `packages/ai/src/providers/*` | 不同供应商如何适配成统一模型事件 |
+| `packages/ai/src/types.ts` | `Message`、`ToolCall`、`Context`、`TranscriptContext`、`AssistantMessageEvent` |
+| `packages/ai/src/models.ts` | `Models.stream()` / `streamSimple()` / `complete()` 统一模型调用入口 |
+| `packages/ai/src/api/*` | 各家 API 的请求适配器（`openai-responses`、`anthropic-messages`、`google-generative-ai` 等） |
+| `packages/ai/src/providers/*` | provider 定义与模型目录（`openai.ts`、`anthropic.ts`、`openai.models.ts` 等） |
+| `packages/ai/src/legacy-api-aliases.ts` | 旧版顶层 `streamSimple` 的 deprecated 别名 |
 | `packages/agent/src/types.ts` | `AgentTool`、`AgentEvent`、`AgentLoopConfig` |
-| `packages/agent/src/agent-loop.ts` | Agent Loop、工具执行、stream assistant response |
+| `packages/agent/src/agent-loop.ts` | Agent Loop、工具执行、stream assistant response、`prepareRequest` / `finishTurn` |
 | `packages/agent/src/agent.ts` | Agent 状态、队列、订阅和生命周期 |
+| `packages/agent/src/harness/` | 新一代 `AgentHarness`：lane-based 会话（v4 JSONL）、内置工具、压缩、技能、prompt templates |
 | `packages/coding-agent/src/core/agent-session.ts` | session prompt 链路、扩展 hook、压缩、模型管理 |
 | `packages/coding-agent/src/core/agent-session-runtime.ts` | new/resume/fork/import 等运行时重建 |
-| `packages/coding-agent/src/core/session-manager.ts` | JSONL 会话、树结构、上下文构建 |
+| `packages/coding-agent/src/core/session-manager.ts` | JSONL 会话（v3）、树结构、上下文构建、`appendContextEdit` |
 | `packages/coding-agent/src/core/resource-loader.ts` | 扩展、技能、prompt、上下文文件加载 |
 | `packages/coding-agent/src/core/system-prompt.ts` | 系统提示词构造 |
 | `packages/coding-agent/src/core/extensions/types.ts` | 扩展 API、事件、工具、上下文类型 |
@@ -64,5 +67,9 @@
 
 ## 最近核对记录
 
+- 2026-09-24：pi 上游更新到 **v0.87.1**（本地参考目录已同步，`main` = `b45597504`，包版本 `@earendil-works/pi-ai@0.87.1`）。本次只同步版本与相关变化，**未逐页复核**：教程常引用的四个核心文件里，`packages/ai/src/types.ts` 变化最大——模型被拆成三个家族（新增 `BaseModel` / `ModelTypeMap` / `ModelType` / `AnyModel`，`ImagesApi`→`ImageApi`、`ImagesModel`→`ImageModel`，并新增结构化分类模型 `classify()` 一族），请求选项新增 `onProviderStreamEvent` 调试钩子（`AgentOptions` 也透传了它）；`packages/agent/src/agent.ts` 只是新增该钩子的透传，`agent-loop.ts` 与 `agent/types.ts` 无改动。
+
+- 2026-09-22：按 Pi **v0.87.0**（`main` 分支最新）重新核对源码。参考目录为 `/Users/jerry/CTFmac/培训/第五周/pi`，确认包名与版本为 `@earendil-works/pi-ai@0.87.0`、`@earendil-works/pi-agent-core@0.87.0`、`@earendil-works/pi-coding-agent@0.87.0`、`@earendil-works/pi-tui@0.87.0`。
+- 2026-09-22：主要差异——`stream.ts` → `models.ts` + `api/`；顶层 `streamSimple` 变 deprecated 别名；`pi-agent-core` 新增 `harness/`（v2 API、v4 lane-based 会话）；`shouldStopAfterTurn` → `finishTurn`；新增 `context_edit` entry、`context_with_system` 扩展事件、按模型压缩预算、零保留压缩。
 - 2026-05-26：重新核对官方 Docs、SDK、Extensions、Session Format、Compaction、Skills 和 GitHub 仓库页面。
 - 2026-05-26：本地源码参考目录为 `/tmp/pi-source`，确认包名与版本为 `@earendil-works/pi-ai`、`@earendil-works/pi-agent-core`、`@earendil-works/pi-coding-agent`、`@earendil-works/pi-tui`。

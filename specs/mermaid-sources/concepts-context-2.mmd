@@ -1,0 +1,10 @@
+flowchart LR
+  A["启动时扫描技能"] --> B["系统提示词只列 name + description"]
+  B --> C{"任务匹配技能?"}
+  C -->|"是"| D["模型读取 SKILL.md"]
+  C -->|"否"| E["不消耗技能全文 token"]
+
+
+
+
+

@@ -1,0 +1,10 @@
+flowchart LR
+  A["旧消息范围"] --> B["summarizer model"]
+  B --> C["CompactionEntry"]
+  C --> D["summary + recent messages"]
+  D --> E["next model request"]
+
+
+
+
+

@@ -1,0 +1,17 @@
+flowchart TB
+  Settings["settings / cwd / agentDir"] --> Loader["DefaultResourceLoader"]
+  Loader --> Extensions["Extensions"]
+  Loader --> Skills["Skills"]
+  Loader --> Templates["Prompt Templates"]
+  Loader --> ContextFiles["AGENTS.md / CLAUDE.md"]
+  Extensions --> Runner["ExtensionRunner"]
+  Runner --> Tools["Registered Tools"]
+  Skills --> Prompt["System Prompt"]
+  ContextFiles --> Prompt
+  Templates --> PromptInput["prompt() preflight"]
+  Tools --> Loop["Agent Loop"]
+
+
+
+
+

@@ -1,0 +1,11 @@
+flowchart LR
+  A["OpenAI-compatible response"] --> B["toTeachingAssistantMessage()"]
+  B --> C["AssistantMessage"]
+  C --> D["runAgentLoop contract"]
+  E["ToolResultMessage"] --> F["OpenAI tool message"]
+  F --> A
+
+
+
+
+

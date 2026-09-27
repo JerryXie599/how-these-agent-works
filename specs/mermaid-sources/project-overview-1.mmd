@@ -1,0 +1,36 @@
+flowchart TB
+  subgraph Browser["React 前端"]
+    Chat["ChatView"]
+    Timeline["EventTimeline"]
+    Inspector["MessageInspector"]
+  end
+
+  subgraph Server["Node 后端"]
+    API["Express API"]
+    Loop["runAgentLoop"]
+    Model["MockModel"]
+    Tools["ToolRegistry"]
+    Store["JsonlSessionStore"]
+    Events["AgentEvent[]"]
+  end
+
+  subgraph Workspace["教学工作区"]
+    Files["sample files"]
+    Notes["notes"]
+  end
+
+  Chat --> API
+  API --> Store
+  API --> Loop
+  Loop --> Model
+  Loop --> Tools
+  Tools --> Workspace
+  Loop --> Events
+  Events --> API
+  API --> Timeline
+  API --> Inspector
+
+
+
+
+

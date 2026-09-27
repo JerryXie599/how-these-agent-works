@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "opencode 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/opencode-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：输入到模型",
+        "focus": [
+          "user",
+          "clients",
+          "link",
+          "server",
+          "session",
+          "provider",
+          "llmapi"
+        ],
+        "note": "客户端全部走生成的 SDK，server 是唯一入口，会话运行时负责循环。"
+      },
+      {
+        "id": "gate",
+        "label": "工具调用闸门",
+        "focus": [
+          "session",
+          "permission",
+          "tools"
+        ],
+        "note": "工具清单按 模型 × agent × 权限 过滤，每次调用先过 ask/allow/deny。"
+      },
+      {
+        "id": "storage-ext",
+        "label": "持久化与外部服务",
+        "focus": [
+          "server",
+          "db",
+          "mcp"
+        ],
+        "note": "SQLite 存消息、事件与收件箱；MCP/LSP 由 server 连接并暴露给模型。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户",
+      "sublabel": "终端 / 桌面 / IDE",
+      "pos": [
+        20,
+        300
+      ],
+      "size": [
+        95,
+        62
+      ]
+    },
+    {
+      "id": "clients",
+      "type": "frontend",
+      "label": "客户端",
+      "sublabel": "TUI · Desktop · ACP",
+      "pos": [
+        160,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "link",
+      "type": "messagebus",
+      "label": "通信层",
+      "sublabel": "HTTP + SSE",
+      "pos": [
+        325,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "server",
+      "type": "backend",
+      "label": "opencode server",
+      "sublabel": "HttpApi · 会话宿主",
+      "pos": [
+        485,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "session",
+      "type": "backend",
+      "label": "Session 运行时",
+      "sublabel": "V1 runLoop · V2 Runner",
+      "pos": [
+        655,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "provider",
+      "type": "backend",
+      "label": "provider 层",
+      "sublabel": "models.dev 目录",
+      "pos": [
+        655,
+        120
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "llmapi",
+      "type": "external",
+      "label": "模型供应商",
+      "sublabel": "AI SDK · 多协议",
+      "pos": [
+        820,
+        120
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "external",
+      "label": "MCP · LSP",
+      "sublabel": "外部工具 / 语言服务",
+      "pos": [
+        955,
+        120
+      ],
+      "size": [
+        105,
+        62
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "SQLite 会话库",
+      "sublabel": "消息 · 事件 · 收件箱",
+      "pos": [
+        485,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "permission",
+      "type": "security",
+      "label": "权限系统",
+      "sublabel": "ask / allow / deny",
+      "pos": [
+        655,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "工具系统",
+      "sublabel": "bash · read · edit · task",
+      "pos": [
+        830,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "执行闸门",
+      "wraps": [
+        "permission",
+        "tools"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "clients",
+      "label": "输入任务",
+      "variant": "emphasis"
+    },
+    {
+      "from": "clients",
+      "to": "link",
+      "label": "SDK"
+    },
+    {
+      "from": "link",
+      "to": "server",
+      "label": "HTTP / RPC",
+      "labelAt": [
+        505,
+        290
+      ]
+    },
+    {
+      "from": "server",
+      "to": "session",
+      "label": "驱动循环",
+      "variant": "emphasis",
+      "labelAt": [
+        632,
+        290
+      ]
+    },
+    {
+      "from": "session",
+      "to": "provider",
+      "label": "llm.stream()",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        700,
+        241
+      ]
+    },
+    {
+      "from": "provider",
+      "to": "llmapi",
+      "label": "协议适配",
+      "labelAt": [
+        802,
+        110
+      ]
+    },
+    {
+      "from": "server",
+      "to": "mcp",
+      "label": "MCP / LSP 客户端",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          547.5,
+          90
+        ],
+        [
+          1007.5,
+          90
+        ]
+      ],
+      "labelAt": [
+        780,
+        83
+      ]
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "持久化",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        550,
+        425
+      ]
+    },
+    {
+      "from": "session",
+      "to": "permission",
+      "label": "工具前置检查",
+      "variant": "security",
+      "labelAt": [
+        720,
+        430
+      ]
+    },
+    {
+      "from": "permission",
+      "to": "tools",
+      "label": "放行",
+      "labelAt": [
+        807,
+        545
+      ]
+    },
+    {
+      "from": "tools",
+      "to": "session",
+      "label": "结果回写",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "server 是一等公民",
+      "items": [
+        "三种宿主：独立进程 serve / TUI 进程内 RPC / attach 远端",
+        "本地嵌入时 server 就是一个 fetch 函数，行为与远端完全一致"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "权限按 agent 定制",
+      "items": [
+        "每个 agent 一套 Ruleset：build 全权 · plan 只读 · explore 白名单",
+        "默认 ask，最后一条匹配生效；「总是允许」按项目持久化"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "V1 与 V2 双轨演进",
+      "items": [
+        "V1 是生产路径，V2 是 Effect-native 重写，同仓并存",
+        "SQLite 持久化 + 结构化滚动摘要 + git 快照三件套"
+      ]
+    }
+  ]
+}

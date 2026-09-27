@@ -1,0 +1,8 @@
+flowchart LR
+    A[假设 hypothesis] --> B[工作单 WorkOrder<br>prove / disprove / map_impact<br>owner_control / retest_design / tool_probe]
+    B --> C[执行并交回执 receipt]
+    C --> D{有回执?}
+    D -- 无 --> E[WatchSignal 告警<br>receipt_required…]
+    E --> F[SelfHealAction 自愈<br>seed_hypothesis · request_receipt · hold_gate…]
+    F --> B
+

@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant Agent
+  participant Model
+  participant Tool
+
+  Agent->>Model: user + tools
+  Model-->>Agent: toolCall read_note
+  Agent->>Tool: execute({ name: "agent" })
+  Tool-->>Agent: "Agent = loop + tools + state"
+  Agent->>Model: toolResult
+  Model-->>Agent: final answer
+
+
+
+
+

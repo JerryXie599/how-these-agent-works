@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant T as TempestCommand
+    participant O as 操作员
+    participant L as AgentLoop (ReAct)
+    participant B as 推理后端
+    participant A as Arsenal
+    T->>O: 派发任务（按 archetype）
+    O->>L: 进入执行（状态机 executing）
+    loop ≤15 轮
+        L->>B: 推理请求（借脑）
+        B-->>L: 工具选择意图
+        L->>A: 工具调用（过门控与 Scope）
+        A-->>L: 观察结果
+    end
+    L-->>O: 结构化 findings
+    O->>T: 完成（cooldown / burned）
+

@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Claude Code 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/claude-code-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：输入到模型",
+        "focus": [
+          "user",
+          "surfaces",
+          "loop",
+          "api",
+          "context"
+        ],
+        "note": "CLI、IDE、Desktop/Web 共享同一个引擎与同一个上下文。"
+      },
+      {
+        "id": "tool-gate",
+        "label": "一次工具调用",
+        "focus": [
+          "loop",
+          "hooks",
+          "permission",
+          "tools",
+          "mcp"
+        ],
+        "note": "每个副作用都要经过 hook 拦截与权限决策两道闸门。"
+      },
+      {
+        "id": "long-session",
+        "label": "长会话与记忆",
+        "focus": [
+          "context",
+          "transcripts",
+          "compaction",
+          "subagents"
+        ],
+        "note": "JSONL 会话记录、自动压缩与子代理各自独立的上下文窗口。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "开发者",
+      "sublabel": "下达任务",
+      "pos": [
+        30,
+        300
+      ],
+      "size": [
+        110,
+        60
+      ]
+    },
+    {
+      "id": "surfaces",
+      "type": "frontend",
+      "label": "多端入口",
+      "sublabel": "CLI · IDE · Desktop/Web",
+      "pos": [
+        185,
+        317
+      ],
+      "size": [
+        125,
+        60
+      ]
+    },
+    {
+      "id": "loop",
+      "type": "backend",
+      "label": "Agent Loop",
+      "sublabel": "查询引擎 · 单一上下文",
+      "pos": [
+        370,
+        300
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "api",
+      "type": "external",
+      "label": "Anthropic API",
+      "sublabel": "Messages 流式接口",
+      "pos": [
+        575,
+        300
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "context",
+      "type": "database",
+      "label": "上下文与记忆",
+      "sublabel": "CLAUDE.md · auto memory",
+      "pos": [
+        370,
+        120
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "subagents",
+      "type": "backend",
+      "label": "子代理",
+      "sublabel": "Task · 独立上下文窗口",
+      "pos": [
+        575,
+        120
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "compaction",
+      "type": "backend",
+      "label": "自动压缩",
+      "sublabel": "auto-compact · /compact",
+      "pos": [
+        185,
+        120
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "transcripts",
+      "type": "database",
+      "label": "会话记录",
+      "sublabel": "~/.claude/projects/*.jsonl",
+      "pos": [
+        185,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "hooks",
+      "type": "security",
+      "label": "Hooks",
+      "sublabel": "PreToolUse · PostToolUse",
+      "pos": [
+        377.5,
+        490
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "permission",
+      "type": "security",
+      "label": "权限决策",
+      "sublabel": "allow / ask / deny",
+      "pos": [
+        562.5,
+        490
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "内置工具",
+      "sublabel": "Read · Edit · Bash · Grep",
+      "pos": [
+        742.5,
+        490
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "mcp",
+      "type": "external",
+      "label": "MCP 服务器",
+      "sublabel": "mcp__server__tool",
+      "pos": [
+        927.5,
+        490
+      ],
+      "size": [
+        115,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "副作用闸门",
+      "wraps": [
+        "hooks",
+        "permission"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "surfaces",
+      "label": "输入任务",
+      "variant": "emphasis"
+    },
+    {
+      "from": "surfaces",
+      "to": "loop",
+      "label": "prompt",
+      "labelAt": [
+        340,
+        300
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "api",
+      "label": "流式请求",
+      "variant": "emphasis",
+      "labelAt": [
+        495,
+        275
+      ]
+    },
+    {
+      "from": "api",
+      "to": "loop"
+    },
+    {
+      "from": "context",
+      "to": "loop",
+      "label": "记忆注入",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        440,
+        241
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "compaction",
+      "label": "接近上限",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "right"
+    },
+    {
+      "from": "compaction",
+      "to": "transcripts",
+      "label": "摘要落盘",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [
+        [
+          15,
+          151
+        ],
+        [
+          15,
+          521
+        ]
+      ],
+      "labelAt": [
+        100,
+        528
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "subagents",
+      "label": "Task 委派",
+      "variant": "dashed",
+      "labelAt": [
+        495,
+        225
+      ]
+    },
+    {
+      "from": "subagents",
+      "to": "loop",
+      "variant": "dashed"
+    },
+    {
+      "from": "loop",
+      "to": "hooks",
+      "label": "tool call",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        440,
+        420
+      ]
+    },
+    {
+      "from": "hooks",
+      "to": "permission",
+      "label": "未拦截"
+    },
+    {
+      "from": "permission",
+      "to": "tools",
+      "label": "允许"
+    },
+    {
+      "from": "tools",
+      "to": "mcp",
+      "label": "调用"
+    },
+    {
+      "from": "tools",
+      "to": "hooks",
+      "label": "PostToolUse",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          805,
+          588
+        ],
+        [
+          440,
+          588
+        ]
+      ],
+      "labelAt": [
+        622,
+        601
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "transcripts",
+      "label": "JSONL 追加"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "一个引擎，多个入口",
+      "items": [
+        "CLI、VS Code/JetBrains、Desktop/Web 连接同一个引擎",
+        "设置、CLAUDE.md、MCP 服务器跨端共享"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "闸门顺序固定",
+      "items": [
+        "顺序固定：PreToolUse → 权限决策 → 执行 → PostToolUse",
+        "deny → ask → allow，越权动作可被 hook 一票否决"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "上下文是稀缺资源",
+      "items": [
+        "CLAUDE.md 与 auto memory 每次注入，接近上限自动压缩",
+        "会话是 JSONL 记录，可恢复、可回退检查点"
+      ]
+    }
+  ]
+}

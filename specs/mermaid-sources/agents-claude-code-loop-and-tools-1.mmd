@@ -1,0 +1,18 @@
+flowchart TB
+    A[用户输入 / 斜杠命令] --> B[组装请求上下文<br>系统提示 + CLAUDE.md + auto memory<br>+ 会话历史 + 工具声明]
+    B --> C[流式调用 Messages API]
+    C --> D{返回内容}
+    D -- 文本块 --> E[流式渲染给用户]
+    D -- tool_use 块 --> F[PreToolUse hook]
+    F --> G[权限决策]
+    G -- 允许 --> H[执行工具]
+    G -- 拒绝 --> I[拒绝原因作为 tool result 回写]
+    H --> J[PostToolUse hook]
+    J --> K[tool result 回写]
+    I --> L{模型继续请求工具?}
+    K --> L
+    L -- 是 --> C
+    L -- 否 --> M[本轮结束<br>Stop hook 触发]
+
+
+

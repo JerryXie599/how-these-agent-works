@@ -1,0 +1,9 @@
+flowchart LR
+    A[发现入库] --> B{复核作业}
+    B -- 二次验证 --> C[verified]
+    B -- 独立评级 --> D[redteam_rating]
+    C --> E{secondary_verified?}
+    D --> E
+    E -- 是 --> F[正式漏洞页 + 交付报告]
+    E -- 否 --> G[占位文案，不出报告]
+

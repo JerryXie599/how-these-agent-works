@@ -1,0 +1,16 @@
+stateDiagram-v2
+  state "空闲" as Idle
+  state "流式输出中" as Streaming
+  state "执行工具中" as ExecutingTools
+  state "已中止" as Aborted
+  [*] --> Idle
+  Idle --> Streaming: 提示词()
+  Streaming --> ExecutingTools: 发出工具调用
+  ExecutingTools --> Streaming: 追加工具结果
+  Streaming --> Idle: 助手停止
+  Streaming --> Aborted: 中止()
+  ExecutingTools --> Aborted: 中止()
+  Aborted --> Idle: 结算监听器
+
+
+

@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "AtkBrain 总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/atkbrain-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：控制台到运行时",
+        "focus": [
+          "user",
+          "console",
+          "api",
+          "loop",
+          "pi"
+        ],
+        "note": "控制台只做客户端，引擎经 RPC 驱动 Pi 子进程池。"
+      },
+      {
+        "id": "tool-gate",
+        "label": "一次工具调用",
+        "focus": [
+          "pi",
+          "bridge",
+          "guard",
+          "tools"
+        ],
+        "note": "模型只能用后端注册的工具，每次执行先过四道闸。"
+      },
+      {
+        "id": "state-evolution",
+        "label": "状态、监督与沉淀",
+        "focus": [
+          "loop",
+          "graph",
+          "supervisor",
+          "memory",
+          "report"
+        ],
+        "note": "攻击图是唯一事实源；御主定期给方案；收工蒸馏记忆、出报告。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "红队运营",
+      "sublabel": "授权环境",
+      "pos": [
+        15,
+        300
+      ],
+      "size": [
+        90,
+        62
+      ]
+    },
+    {
+      "id": "console",
+      "type": "frontend",
+      "label": "控制台",
+      "sublabel": "React · 攻击图可视化",
+      "pos": [
+        140,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API + WS",
+      "sublabel": "FastAPI · 事件总线",
+      "pos": [
+        295,
+        300
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "loop",
+      "type": "backend",
+      "label": "自循环引擎",
+      "sublabel": "猎钟 · 收工判定",
+      "pos": [
+        450,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "pi",
+      "type": "backend",
+      "label": "Pi 运行时",
+      "sublabel": "--mode rpc · 进程池",
+      "pos": [
+        610,
+        300
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "bridge",
+      "type": "messagebus",
+      "label": "扩展桥",
+      "sublabel": "工具转发",
+      "pos": [
+        775,
+        300
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "四道闸",
+      "sublabel": "命令·范围·可达·身份",
+      "pos": [
+        775,
+        120
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "工具执行",
+      "sublabel": "run_cmd · http_request",
+      "pos": [
+        930,
+        120
+      ],
+      "size": [
+        115,
+        62
+      ]
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "报告交付",
+      "sublabel": "母版 + 槽位",
+      "pos": [
+        140,
+        120
+      ],
+      "size": [
+        135,
+        62
+      ]
+    },
+    {
+      "id": "memory",
+      "type": "database",
+      "label": "记忆库",
+      "sublabel": "episode / lesson",
+      "pos": [
+        295,
+        490
+      ],
+      "size": [
+        120,
+        62
+      ]
+    },
+    {
+      "id": "supervisor",
+      "type": "backend",
+      "label": "御主监督",
+      "sublabel": "一次性 Pi · 方案绑定",
+      "pos": [
+        450,
+        490
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "graph",
+      "type": "database",
+      "label": "攻击图",
+      "sublabel": "SQLite · Intent · 去重",
+      "pos": [
+        610,
+        490
+      ],
+      "size": [
+        125,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "执行闸门",
+      "wraps": [
+        "guard",
+        "tools"
+      ],
+      "pad": 14
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "console",
+      "label": "操作"
+    },
+    {
+      "from": "console",
+      "to": "api",
+      "label": "REST / WS",
+      "labelAt": [
+        277,
+        290
+      ]
+    },
+    {
+      "from": "api",
+      "to": "loop",
+      "label": "调度"
+    },
+    {
+      "from": "loop",
+      "to": "pi",
+      "label": "prompt / abort",
+      "labelAt": [
+        592,
+        290
+      ]
+    },
+    {
+      "from": "pi",
+      "to": "bridge"
+    },
+    {
+      "from": "bridge",
+      "to": "guard",
+      "label": "工具调用",
+      "labelAt": [
+        832.5,
+        240
+      ]
+    },
+    {
+      "from": "guard",
+      "to": "tools",
+      "label": "放行"
+    },
+    {
+      "from": "tools",
+      "to": "bridge",
+      "label": "结果回写",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "right",
+      "via": [
+        [
+          987.5,
+          240
+        ],
+        [
+          920,
+          240
+        ],
+        [
+          920,
+          331
+        ]
+      ],
+      "labelAt": [
+        955,
+        233
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "supervisor",
+      "label": "门闩阶梯",
+      "labelAt": [
+        512.5,
+        462
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "graph",
+      "label": "读写状态"
+    },
+    {
+      "from": "loop",
+      "to": "memory",
+      "label": "收工蒸馏",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          512.5,
+          430
+        ],
+        [
+          355,
+          430
+        ]
+      ],
+      "labelAt": [
+        434,
+        423
+      ]
+    },
+    {
+      "from": "loop",
+      "to": "report",
+      "label": "收口出报告",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          512.5,
+          220
+        ],
+        [
+          207.5,
+          220
+        ]
+      ],
+      "labelAt": [
+        360,
+        213
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "状态外置到图",
+      "items": [
+        "每轮重开 Pi 会话，只换简报，历史不进上下文",
+        "攻击图是唯一事实源，入库硬校验逼模型说真话"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "假设模型会乱打",
+      "items": [
+        "命令守卫、授权范围、内网可达、身份门四道闸",
+        "出口 IP 必须不等于直连 IP 才算验真"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "反夸大是流程",
+      "items": [
+        "二次验证 + 独立评级 + 报告门槛，未复核不出正式漏洞页",
+        "只有赢局才蒸馏进记忆库，回灌时防背题"
+      ]
+    }
+  ]
+}

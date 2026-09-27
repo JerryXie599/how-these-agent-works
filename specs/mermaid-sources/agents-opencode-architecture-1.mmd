@@ -1,0 +1,10 @@
+flowchart TB
+    A["schema<br>纯 Schema 叶子，禁止 DB/原生模块"] --> B["protocol<br>HttpApi 路径/Payload/游标"]
+    A --> C
+    B --> C["server<br>路由 + handler + 中间件"]
+    C --> D["client<br>反射生成的 Promise / Effect 客户端"]
+    D --> E["sdk · sdk-next<br>对外 SDK 与嵌入式宿主"]
+    F["core<br>V2 领域内核（Effect 服务）"] --> C
+    G["llm<br>协议适配层"] --> F
+
+

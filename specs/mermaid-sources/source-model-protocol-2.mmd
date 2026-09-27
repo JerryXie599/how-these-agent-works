@@ -1,0 +1,19 @@
+sequenceDiagram
+  participant AgentLoop as Agent Loop
+  participant AI as pi-ai
+  participant Adapter as Provider Adapter
+  participant API as Remote Model API
+
+  AgentLoop->>AI: Models.stream(model, context)
+  AI->>AI: normalizeContext(context) -> TranscriptContext
+  AI->>Adapter: provider-specific request
+  Adapter->>API: provider-specific request
+  API-->>Adapter: provider-specific stream
+  Adapter-->>AI: AssistantMessageEvent
+  AI-->>AgentLoop: text/tool/thinking/error events
+  AgentLoop->>AgentLoop: assemble AssistantMessage
+
+
+
+
+

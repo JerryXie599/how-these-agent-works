@@ -18,6 +18,9 @@
 | split turn 会额外摘要这个 turn 的前半段 | [Split Turns](https://pi.dev/docs/latest/compaction#split-turns) | 一个超长 turn 不能简单整段保留或整段丢给历史摘要 |
 | branch summary 发生在 `/tree` 切换分支时，解决的问题不同于 compaction | [Branch Summarization](https://pi.dev/docs/latest/compaction#branch-summarization) | compaction 是同一路径减重，branch summary 是换路径时带走经验 |
 | 默认摘要会累计文件读写信息 | [Cumulative File Tracking](https://pi.dev/docs/latest/compaction#cumulative-file-tracking) | 代码 Agent 需要知道哪些文件被读过、改过，而不只是聊天摘要 |
+| v0.86 起 `reserveTokens` / `keepRecentTokens` 可以按模型覆盖（`compaction.modelOverrides`） | [Per-model overrides](https://pi.dev/docs/latest/compaction#per-model-overrides) | 不同模型上下文窗口、输出长度差异很大，统一预算会过头或不足 |
+| v0.87 起支持“保留零原文”的压缩（`sessionManager.appendCompaction(summary, null, tokensBefore)`） | `SessionManager.appendCompaction` | 摘要 entry 以自身 id 作为 kept boundary，适合明确不再需要旧原文的场景 |
+| v0.87 起 `ContextEditEntry` 可以省略/替换单条消息，不经过压缩 | [ContextEditEntry](https://pi.dev/docs/latest/session-format#contexteditentry) | 编辑上下文不等于压缩：前者精确改一条，后者成段摘要 |
 
 这些细节不是为了炫技。它们共同解决一个问题：压缩后，模型看到的上下文必须仍然像“连续工作现场”，而不是一段抽象回忆录。
 
@@ -25,18 +28,7 @@
 
 教学版可以用“上下文字符串长度超过阈值”模拟压缩。真实 Pi 更接近下面这个流程：
 
-```mermaid
-flowchart TD
-  A["最近 assistant usage"] --> B["从模型 usage 读取 token"]
-  C["usage 之后的新消息"] --> D["估算追加 token"]
-  B --> E["contextTokens"]
-  D --> E
-  E --> F{"是否超过可用窗口"}
-  F -->|"否"| G["继续请求模型"]
-  F -->|"是"| H["准备 compaction"]
-  H --> I["选择 firstKeptEntryId"]
-  I --> J["生成 summary 并追加 CompactionEntry"]
-```
+[![触发条件：不是消息多，而是预算不够 流程图](/diagrams/source-advanced-compaction-1.png)](/diagrams/source-advanced-compaction-1.png)
 
 公式是：
 
@@ -81,13 +73,7 @@ messages from firstKeptEntryId to current leaf
 
 如果压缩刚好切在 `toolResult` 前后，模型可能看到一个没有来源的工具结果，或者看到一个没有结果的工具调用。这会破坏对话协议。
 
-```mermaid
-flowchart LR
-  U["user turn start"] --> A["assistant toolCall"]
-  A --> T["toolResult"]
-  T --> R["assistant response"]
-  R --> N["next user turn"]
-```
+[![cut point：为什么不能随便切 流程图](/diagrams/source-advanced-compaction-2.png)](/diagrams/source-advanced-compaction-2.png)
 
 官方规则里，合法 cut point 可以是用户消息、assistant 消息、bashExecution、自定义消息或 branch summary，但不会切在 tool result 上。直觉上讲：可以从一轮的起点接上，也可以从 assistant 的一个稳定输出点接上，但不能把“工具调用和结果”拆成孤儿。
 
@@ -97,15 +83,7 @@ flowchart LR
 
 但代码 Agent 经常遇到一个超长 turn：
 
-```mermaid
-flowchart TD
-  U["user: 修复失败测试"] --> A1["assistant: 分析并调用 read"]
-  A1 --> T1["toolResult: 大文件内容"]
-  T1 --> A2["assistant: 调用 test"]
-  A2 --> T2["toolResult: 长日志"]
-  T2 --> A3["assistant: 调用 edit"]
-  A3 --> T3["toolResult: diff"]
-```
+[![split turn：一个 turn 自己太大怎么办 流程图](/diagrams/source-advanced-compaction-3.png)](/diagrams/source-advanced-compaction-3.png)
 
 如果这个 turn 已经超过 `keepRecentTokens`，Pi 不能简单说“整个 turn 都保留”。这时 cut point 会落在 turn 内部，形成 split turn。真实实现会把 turn 前半段作为 `turnPrefixMessages` 单独摘要，再把后半段原文保留下来。
 
@@ -147,6 +125,18 @@ Pi 官方摘要格式里包含 `<read-files>` 和 `<modified-files>`。默认实
 | previous summary 的 details | 多次压缩后仍能累计历史工作现场 |
 
 从工程角度看，`details` 是“给程序读的摘要”，自然语言 summary 是“给模型读的摘要”。两者配合，恢复质量会比只存一段文本稳定得多。
+
+## v0.86+ 的新边界：按模型预算、零保留与上下文编辑
+
+最近几个版本把压缩从“一个全局策略”拆成了更细的控制面：
+
+| 能力 | 引入版本 | 解决什么问题 |
+| --- | --- | --- |
+| 按模型覆盖 `reserveTokens` / `keepRecentTokens` | v0.86 | 一个上下文 20 万 token 的模型和一个 4 万的模型用同一套预算，不是过头就是不足。`compaction.modelOverrides` 让每个模型有自己的保留策略 |
+| 零保留压缩 `appendCompaction(summary, null, tokensBefore)` | v0.87 | 有些场景明确知道旧原文不再需要，摘要 entry 直接把自身 id 作为 kept boundary，不再留原文 |
+| `ContextEditEntry` | v0.87 | 想“省略某一条消息”或“替换某条消息的文本”时，不再需要触发整段压缩。`appendContextEdit(entryId, null)` 省略，`appendContextEdit(entryId, { role, content })` 替换；原始历史、usage 和 UI 历史都不变 |
+
+理解这三者的关系：压缩是“成段摘要并留边界指针”，零保留是“摘要后不留原文”，上下文编辑是“精确改一条”。它们共用同一个 SessionManager 事实来源，所以能混用而不打架。
 
 ## 教学版为什么不全实现
 

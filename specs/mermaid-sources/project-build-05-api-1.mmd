@@ -1,0 +1,19 @@
+sequenceDiagram
+  participant UI as React
+  participant API as Express
+  participant Store as JsonlSessionStore
+  participant AgentLoop as runAgentLoop
+
+  UI->>API: POST /api/prompt
+  API->>Store: append user message
+  API->>Store: compactIfNeeded
+  API->>Store: buildContext
+  API->>AgentLoop: runAgentLoop(context)
+  AgentLoop-->>API: newMessages + events
+  API->>Store: append newMessages
+  API-->>UI: SessionResponse
+
+
+
+
+

@@ -1,0 +1,15 @@
+flowchart TD
+  A["最近 assistant usage"] --> B["从模型 usage 读取 token"]
+  C["usage 之后的新消息"] --> D["估算追加 token"]
+  B --> E["contextTokens"]
+  D --> E
+  E --> F{"是否超过可用窗口"}
+  F -->|"否"| G["继续请求模型"]
+  F -->|"是"| H["准备 compaction"]
+  H --> I["选择 firstKeptEntryId"]
+  I --> J["生成 summary 并追加 CompactionEntry"]
+
+
+
+
+

@@ -1,0 +1,11 @@
+flowchart TB
+    A["dsh web / --profile headless"] --> B["bin.js<br>只解析自己的 flag<br>--profile · --patch · --dump-config"]
+    B --> C["profile-boot<br>loadLayeredEnv 分层 .env"]
+    C --> D["loadProfile<br>读 profiles/&lt;name&gt;/"]
+    D --> E["按顺序叠 patch 层"]
+    E --> F["注入系统 preset 根<br>config/agent-presets/"]
+    F --> G["boot() 挂载 cordis 树<br>Loader 逐行实例化插件"]
+    G --> H["timer + HMR 插件<br>watchUserPatches 热重载"]
+
+
+

@@ -1,0 +1,10 @@
+flowchart LR
+  A["assistant: toolCall"] --> B["execute tool"]
+  B --> C["toolResult message"]
+  C --> D["append to context"]
+  D --> E["next model request"]
+
+
+
+
+

@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant Demo as demo:05
+  participant LLM as OpenAI-compatible API
+  participant Tool as local list_files
+
+  Demo->>LLM: messages + tools
+  LLM-->>Demo: assistant tool_call
+  Demo->>Tool: execute list_files
+  Tool-->>Demo: README.md / agent-notes.md
+  Demo->>LLM: assistant tool_call + tool result
+  LLM-->>Demo: final answer
+
+
+
+
+

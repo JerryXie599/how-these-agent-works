@@ -1,0 +1,9 @@
+flowchart LR
+    A[TUI<br>进程内嵌入] --> S[opencode server<br>HttpApi]
+    B[Desktop / Web<br>HTTP 连接] --> S
+    C[VS Code / ACP<br>编辑器协议] --> S
+    D[opencode attach<br>远端连接] --> S
+    S --> E[(SQLite 会话库)]
+    S --> F[模型供应商]
+
+

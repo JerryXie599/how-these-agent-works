@@ -1,0 +1,11 @@
+flowchart LR
+    A[模型发出 tool_use] --> B[PreToolUse hook<br>可拦截 / 改参]
+    B --> C[权限决策<br>deny → ask → allow]
+    C -- 允许 --> D[执行工具]
+    D --> E[PostToolUse hook<br>审计 / 修改结果]
+    E --> F[结果回写模型]
+    C -- 拒绝 --> G[拒绝原因回写模型]
+    B -- exit 2 --> G
+
+
+

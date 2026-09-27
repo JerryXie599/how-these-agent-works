@@ -16,19 +16,7 @@ npm run demo:02
 
 ## 流程
 
-```mermaid
-sequenceDiagram
-  participant Agent
-  participant Model
-  participant Tool
-
-  Agent->>Model: user + tools
-  Model-->>Agent: toolCall read_note
-  Agent->>Tool: execute({ name: "agent" })
-  Tool-->>Agent: "Agent = loop + tools + state"
-  Agent->>Model: toolResult
-  Model-->>Agent: final answer
-```
+[![流程 流程图](/diagrams/demos-02-tools-1.png)](/diagrams/demos-02-tools-1.png)
 
 ## 关键点
 

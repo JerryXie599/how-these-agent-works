@@ -1,0 +1,13 @@
+flowchart TB
+  A["估算上下文 token"] --> B{"超过阈值?"}
+  B -->|"否"| C["继续请求模型"]
+  B -->|"是"| D["向前选择 cut point"]
+  D --> E["提取待摘要消息"]
+  E --> F["生成结构化 summary"]
+  F --> G["append CompactionEntry"]
+  G --> H["reload session context"]
+
+
+
+
+

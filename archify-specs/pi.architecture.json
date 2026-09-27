@@ -1,0 +1,394 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Pi 总体架构：三个包如何分工",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/pi-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-flow",
+        "label": "主链路：输入到模型",
+        "focus": [
+          "user",
+          "tui",
+          "sdk",
+          "agent",
+          "models",
+          "providers"
+        ],
+        "note": "从用户输入一句话到模型流式返回的完整通路。"
+      },
+      {
+        "id": "side-effects",
+        "label": "副作用与拦截",
+        "focus": [
+          "agent",
+          "ext-hooks",
+          "tools",
+          "resources"
+        ],
+        "note": "模型只能提出 tool call，真正的副作用经过 hook、schema 校验后由本地工具执行。"
+      },
+      {
+        "id": "persistence",
+        "label": "持久化与资源",
+        "focus": [
+          "sdk",
+          "session-store",
+          "resources",
+          "events"
+        ],
+        "note": "JSONL 会话树负责持久化与分支，ResourceLoader 负责装配项目规则与扩展。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户",
+      "sublabel": "在终端下达任务",
+      "pos": [
+        30,
+        300
+      ],
+      "size": [
+        110,
+        60
+      ]
+    },
+    {
+      "id": "tui",
+      "type": "frontend",
+      "label": "运行模式",
+      "sublabel": "TUI / RPC / print",
+      "pos": [
+        185,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "sdk",
+      "type": "backend",
+      "label": "AgentSession",
+      "sublabel": "prompt() preflight · 运行层",
+      "pos": [
+        350,
+        300
+      ],
+      "size": [
+        140,
+        62
+      ],
+      "tag": "pi-coding-agent"
+    },
+    {
+      "id": "session-store",
+      "type": "database",
+      "label": "会话 JSONL 树",
+      "sublabel": "append · branch · 恢复",
+      "pos": [
+        350,
+        490
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "resources",
+      "type": "database",
+      "label": "ResourceLoader",
+      "sublabel": ".pi/ 扩展 · 技能 · 模板 · 规则",
+      "pos": [
+        350,
+        120
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Agent Loop",
+      "sublabel": "runAgentLoop 状态机",
+      "pos": [
+        540,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ],
+      "tag": "pi-agent-core"
+    },
+    {
+      "id": "events",
+      "type": "messagebus",
+      "label": "AgentEvent 流",
+      "sublabel": "生命周期 · 增量 · 工具过程",
+      "pos": [
+        540,
+        120
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "ext-hooks",
+      "type": "security",
+      "label": "扩展 hooks",
+      "sublabel": "工具 / 压缩拦截点",
+      "pos": [
+        540,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "tools",
+      "type": "backend",
+      "label": "内置 + 扩展工具",
+      "sublabel": "read · bash · edit",
+      "pos": [
+        740,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "models",
+      "type": "backend",
+      "label": "Models.stream()",
+      "sublabel": "统一消息与事件协议",
+      "pos": [
+        740,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ],
+      "tag": "pi-ai"
+    },
+    {
+      "id": "providers",
+      "type": "external",
+      "label": "模型供应商 API",
+      "sublabel": "Anthropic · OpenAI · Google",
+      "pos": [
+        920,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "产品层 pi-coding-agent",
+      "wraps": [
+        "tui",
+        "sdk",
+        "session-store",
+        "resources",
+        "ext-hooks",
+        "tools"
+      ],
+      "pad": 18
+    },
+    {
+      "kind": "region",
+      "label": "核心运行时 pi-agent-core",
+      "wraps": [
+        "agent",
+        "events"
+      ],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "模型协议层 pi-ai",
+      "wraps": [
+        "models"
+      ],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    {
+      "from": "user",
+      "to": "tui",
+      "label": "输入任务",
+      "variant": "emphasis"
+    },
+    {
+      "from": "tui",
+      "to": "sdk",
+      "label": "prompt()"
+    },
+    {
+      "from": "sdk",
+      "to": "resources",
+      "label": "启动装配",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        420,
+        241
+      ]
+    },
+    {
+      "from": "sdk",
+      "to": "session-store",
+      "label": "JSONL 追加 / 分支",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        420,
+        432
+      ]
+    },
+    {
+      "from": "sdk",
+      "to": "agent",
+      "label": "启动",
+      "variant": "emphasis"
+    },
+    {
+      "from": "agent",
+      "to": "events",
+      "label": "发出事件",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        605,
+        241
+      ]
+    },
+    {
+      "from": "events",
+      "to": "tui",
+      "label": "流式渲染",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          605,
+          60
+        ],
+        [
+          245,
+          60
+        ]
+      ]
+    },
+    {
+      "from": "agent",
+      "to": "models",
+      "label": "统一消息",
+      "variant": "emphasis"
+    },
+    {
+      "from": "models",
+      "to": "providers",
+      "label": "HTTP 流式请求",
+      "labelAt": [
+        895,
+        385
+      ]
+    },
+    {
+      "from": "providers",
+      "to": "models",
+      "label": "供应商事件",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          985,
+          420
+        ],
+        [
+          805,
+          420
+        ]
+      ]
+    },
+    {
+      "from": "models",
+      "to": "agent"
+    },
+    {
+      "from": "agent",
+      "to": "ext-hooks",
+      "label": "执行前拦截",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        605,
+        432
+      ]
+    },
+    {
+      "from": "ext-hooks",
+      "to": "tools",
+      "label": "放行 / 改参",
+      "labelDy": 27
+    },
+    {
+      "from": "tools",
+      "to": "agent",
+      "label": "tool result 回写",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "一个稳定的核心循环",
+      "items": [
+        "准备上下文 → 请求模型 → 处理工具 → 回写结果 → 继续或停止",
+        "产品会变，这个循环不变，所以被单独放进 pi-agent-core"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "两个必须抓住的边界",
+      "items": [
+        "LLM 边界：供应商差异被 pi-ai 抹平成统一消息与事件",
+        "副作用边界：模型只能提出 tool call，执行权在本地工具手里"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "持久化优先",
+      "items": [
+        "会话是 JSONL entry 树，不是内存数组",
+        "长上下文靠压缩摘要 entry 承接，而不是删除历史"
+      ]
+    }
+  ]
+}

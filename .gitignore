@@ -1,9 +1,15 @@
 node_modules/
 dist/
-.vitepress/cache/
-.vitepress/dist/
+**/.vitepress/cache/
+**/.vitepress/dist/
 .playwright-cli/
 output/
 examples/teaching-agent/.teaching-agent/
 examples/teaching-agent/dist/
 .vercel/
+
+# 本机一次性产物
+.DS_Store
+/tmp/
+shots/
+*.visual-check.*

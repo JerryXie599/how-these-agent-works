@@ -28,14 +28,7 @@ workspace/agent-notes.md
 
 真正读文件的是本地运行时。这个边界非常重要：
 
-```mermaid
-flowchart LR
-  A["Model"] --> B["toolCall JSON"]
-  B --> C["ToolRegistry"]
-  C --> D["validate / guard"]
-  D --> E["execute local effect"]
-  E --> F["toolResult message"]
-```
+[![这一步解决什么问题 流程图](/diagrams/project-build-03-tools-1.png)](/diagrams/project-build-03-tools-1.png)
 
 ## ToolRegistry
 

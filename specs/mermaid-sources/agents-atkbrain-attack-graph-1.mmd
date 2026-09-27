@@ -1,0 +1,7 @@
+flowchart LR
+    T["target: 目标服务器"] -->|扫描| S1["service: 22/ssh"]
+    T -->|扫描| S2["service: 443/https"]
+    S2 -->|发现漏洞| V1["vuln: 接口注入（已验证）"]
+    V1 -->|利用成功| F["foothold: 服务器 shell"]
+    F -->|横向移动| T2["target: 内网机器"]
+

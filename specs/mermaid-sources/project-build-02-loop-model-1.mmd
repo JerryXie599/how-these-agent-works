@@ -1,0 +1,13 @@
+flowchart TD
+  A["turn_start"] --> B["model.complete()"]
+  B --> C["assistant message"]
+  C --> D{"has toolCall?"}
+  D -->|"no"| E["agent_end"]
+  D -->|"yes"| F["execute tool"]
+  F --> G["append toolResult"]
+  G --> B
+
+
+
+
+

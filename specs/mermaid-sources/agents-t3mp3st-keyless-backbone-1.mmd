@@ -1,0 +1,5 @@
+flowchart LR
+    A["本机已登录的 coding agent<br>（可能带完整工具权限）"] -- "降权参数 / 环境变量" --> B["纯推理后端<br>只输出文本建议"]
+    B -- "工具选择意图" --> C["AgentLoop 解析"]
+    C --> D["Arsenal 执行<br>过门控与 Scope"]
+

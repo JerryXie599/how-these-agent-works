@@ -189,15 +189,7 @@ export type ToolResult = {
 
 `ToolDefinition` 会发给模型，告诉它有哪些工具。`ToolResult` 是本地执行结果，再被包装成 `ToolResultMessage` 写回上下文。
 
-```mermaid
-flowchart LR
-  A["ToolDefinition"] --> B["MockModel"]
-  B --> C["ToolCallContent"]
-  C --> D["ToolRegistry.execute()"]
-  D --> E["ToolResult"]
-  E --> F["ToolResultMessage"]
-  F --> G["next model request"]
-```
+[![ToolDefinition 和 ToolResult 流程图](/diagrams/project-build-01-protocol-1.png)](/diagrams/project-build-01-protocol-1.png)
 
 ## SessionEntry
 

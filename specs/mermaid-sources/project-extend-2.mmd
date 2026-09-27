@@ -1,0 +1,24 @@
+sequenceDiagram
+  participant UI as React UI
+  participant API as Express API
+  participant AgentLoop as runAgentLoop
+  participant Model as Model Adapter
+  participant Tools as ToolRegistry
+
+  UI->>API: POST /api/runs { text }
+  API-->>UI: { runId }
+  UI->>API: GET /api/runs/:runId/events
+  API->>AgentLoop: runAgentLoop(onEvent)
+  AgentLoop->>Model: complete / stream
+  Model-->>AgentLoop: message_update
+  AgentLoop-->>API: AgentEvent
+  API-->>UI: SSE event
+  AgentLoop->>Tools: execute tool
+  Tools-->>AgentLoop: toolResult
+  AgentLoop-->>API: tool_execution_end
+  API-->>UI: SSE event
+
+
+
+
+

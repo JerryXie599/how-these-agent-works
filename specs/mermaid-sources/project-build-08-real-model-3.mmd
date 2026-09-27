@@ -1,0 +1,15 @@
+flowchart TD
+  A["delta.content"] --> B["append text buffer"]
+  C["delta.tool_calls[i].function.name"] --> D["remember tool name"]
+  E["delta.tool_calls[i].function.arguments"] --> F["append argument buffer"]
+  B --> G["message_update"]
+  D --> G
+  F --> G
+  G --> H{"finish_reason?"}
+  H -->|"tool_calls"| I["emit AssistantMessage with toolCall blocks"]
+  H -->|"stop"| J["emit AssistantMessage with text blocks"]
+
+
+
+
+

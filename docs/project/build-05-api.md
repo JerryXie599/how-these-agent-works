@@ -28,22 +28,7 @@ src/server/index.ts
 
 ## POST /api/prompt 的顺序
 
-```mermaid
-sequenceDiagram
-  participant UI as React
-  participant API as Express
-  participant Store as JsonlSessionStore
-  participant AgentLoop as runAgentLoop
-
-  UI->>API: POST /api/prompt
-  API->>Store: append user message
-  API->>Store: compactIfNeeded
-  API->>Store: buildContext
-  API->>AgentLoop: runAgentLoop(context)
-  AgentLoop-->>API: newMessages + events
-  API->>Store: append newMessages
-  API-->>UI: SessionResponse
-```
+[![POST /api/prompt 的顺序 流程图](/diagrams/project-build-05-api-1.png)](/diagrams/project-build-05-api-1.png)
 
 代码上对应：
 

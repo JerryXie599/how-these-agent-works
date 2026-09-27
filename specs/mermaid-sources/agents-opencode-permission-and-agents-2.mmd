@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant M as 模型
+    participant S as Session 运行时
+    participant P as 权限系统
+    participant U as 用户
+    M->>S: tool call（bash: git push）
+    S->>P: ask(bash, "git push *")
+    P->>P: 求值 Ruleset → ask
+    P->>U: 创建 pending 请求（SSE 通知 TUI）
+    U->>P: POST /permission/:id/reply
+    alt 允许
+        P->>S: 继续执行
+    else 拒绝（可带反馈）
+        P->>S: RejectedError / CorrectedError(feedback)
+        S->>M: 拒绝原因作为工具错误回写
+    end
+
+

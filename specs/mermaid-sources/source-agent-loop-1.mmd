@@ -1,0 +1,14 @@
+flowchart TD
+  A["start"] --> B["drain steering"]
+  B --> C["stream assistant"]
+  C --> D{"has tool calls?"}
+  D -->|"yes"| E["execute tools"]
+  E --> B
+  D -->|"no"| F{"has follow-up?"}
+  F -->|"yes"| B
+  F -->|"no"| G["agent_end"]
+
+
+
+
+

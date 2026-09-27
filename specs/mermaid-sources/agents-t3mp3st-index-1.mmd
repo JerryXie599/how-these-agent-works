@@ -1,0 +1,8 @@
+flowchart TB
+    A["三层接口<br>CLI · REST · MCP"] --> B["OpGeneral 战略层<br>自然语言 directive → OpPlan"]
+    B --> C["TempestCommand 编排器<br>tick 循环 · 阶段推进 · 派发"]
+    C --> D["OperatorCell 操作员池<br>8 archetype · 状态机"]
+    D --> E["AgentLoop (ReAct)<br>选工具 → 执行 → 观察 ≤15 轮"]
+    E --> F["Arsenal 武器库<br>工具 + 门控 + Scope"]
+    E -. "借脑" .-> G["推理后端<br>本地 Agent / 云模型 / 本地模型"]
+

@@ -2,20 +2,17 @@
 
 读 Pi 源码最容易卡住的地方，不是某个函数太难，而是入口太多：CLI、TUI、SDK、RPC、扩展、工具、模型供应商都在同一个 monorepo 里。正确读法是先找“稳定骨架”，再看产品层怎么把骨架包装成可用工具。
 
+::: tip 版本对照
+本文按 **Pi v0.87.0**（2026-09-22）核对。相比教程最初写作时的 v0.78.0，源码有几处关键移动，但下面的“稳定骨架”仍然成立（2026-09-24 注：pi 上游已发布 v0.87.1，本地参考目录已同步；本页尚未逐页复核到 v0.87.1，与教程相关的变化记在《来源与核对记录》）：
+
+- 模型入口从 `packages/ai/src/stream.ts` 移到 `packages/ai/src/models.ts`（`Models.stream()` / `Models.streamSimple()`）；每家 API 的请求适配器落在 `packages/ai/src/api/*`，旧的顶层 `streamSimple` 保留在 `packages/ai/src/legacy-api-aliases.ts` 并标记 deprecated。
+- `packages/ai/src/providers/` 现在主要负责 provider 与模型目录定义，真正的“供应商差异抹平”在 `packages/ai/src/api/`。
+- `pi-agent-core` 新增 `packages/agent/src/harness/`：新一代 `AgentHarness`（v2 API，lane-based 会话、耐久执行、内置工具、压缩），自 v0.84.0 起成为该包默认导出；`pi-coding-agent` 的核心仍运行在 `AgentSession` + `SessionManager` 上。
+:::
+
 ## 先看哪一层
 
-```mermaid
-flowchart TB
-  Docs["官方文档: docs/latest"] --> SDK["SDK 概念"]
-  SDK --> CoreTypes["packages/ai/src/types.ts"]
-  CoreTypes --> AgentTypes["packages/agent/src/types.ts"]
-  AgentTypes --> Loop["packages/agent/src/agent-loop.ts"]
-  Loop --> Agent["packages/agent/src/agent.ts"]
-  Agent --> Session["packages/coding-agent/src/core/agent-session.ts"]
-  Session --> Store["packages/coding-agent/src/core/session-manager.ts"]
-  Session --> Resources["packages/coding-agent/src/core/resource-loader.ts"]
-  Session --> Tools["packages/coding-agent/src/core/tools/"]
-```
+[![先看哪一层 流程图](/diagrams/source-source-map-1.png)](/diagrams/source-source-map-1.png)
 
 这个顺序的好处是，你先理解“消息和事件长什么样”，再看 loop 怎么消费它们，最后才进入会话、扩展、TUI 这些产品复杂度。
 
@@ -34,7 +31,7 @@ flowchart TB
 
 | 包 | 先读文件 | 读懂后你应该能回答 |
 | --- | --- | --- |
-| `pi-ai` | `src/types.ts`、`src/stream.ts` | 模型调用统一成了哪些消息、事件、工具协议？ |
+| `pi-ai` | `src/types.ts`、`src/models.ts`（`Models.stream`）与 `src/api/` | 模型调用统一成了哪些消息、事件、工具协议？ |
 | `pi-agent-core` | `src/types.ts`、`src/agent-loop.ts`、`src/agent.ts` | Agent 如何一轮轮请求模型、执行工具、维护状态？ |
 | `pi-coding-agent` | `src/core/sdk.ts`、`src/core/agent-session.ts`、`src/core/session-manager.ts` | 一个纯 loop 如何变成有会话、扩展、压缩和工具的产品？ |
 
@@ -44,27 +41,7 @@ Pi 官方文档也按相近维度组织：总览强调 Pi 是一个小核心、�
 
 建议第一次阅读只追一条路径：用户输入一句话，到磁盘里出现一条 session message。
 
-```mermaid
-sequenceDiagram
-  participant UI as CLI/TUI/RPC/SDK
-  participant SDK as createAgentSession
-  participant AS as AgentSession
-  participant A as Agent
-  participant L as runAgentLoop
-  participant AI as streamSimple
-  participant S as SessionManager
-
-  UI->>SDK: 创建 session
-  SDK->>AS: 注入 Agent / ResourceLoader / SessionManager
-  UI->>AS: prompt(text)
-  AS->>A: prompt(messages)
-  A->>L: runAgentLoop(context, config)
-  L->>AI: streamSimple(model, context)
-  AI-->>L: AssistantMessageEvent
-  L-->>A: AgentEvent
-  A-->>AS: subscribe(listener)
-  AS->>S: appendMessage(message)
-```
+[![一条主线读到底 流程图](/diagrams/source-source-map-2.png)](/diagrams/source-source-map-2.png)
 
 先不要追所有扩展 hook。等这条主线通了，再回头看每个 hook 插在哪里。
 
@@ -76,9 +53,12 @@ sequenceDiagram
 | --- | --- | --- |
 | `input` | `AgentSession.prompt()` 前 | 改写或接管用户输入 |
 | `before_agent_start` | 构造消息后、调用 Agent 前 | 注入 custom message 或修改 system prompt |
+| `context` | 模型请求前、构建上下文时 | 过滤、切片、改写发给模型的消息（不包含 system prompt 与工具声明，Pi 会在之后自动恢复） |
+| `context_with_system` | 模型请求前 | 对包含 system message 的完整 transcript 做逐请求变换，结果原样发送（v0.87 新增） |
 | `before_provider_request` | 请求模型前 | 修改 provider payload |
 | `tool_call` | 工具执行前 | 审批、拦截、改参数 |
 | `tool_result` | 工具执行后 | 脱敏、截断、改结果 |
+| `turn_end` / `agent_before_settle` | 一轮结束 / 会话落定前 | 持久化结构性 entry，或要求再发起一次模型请求（v0.87 起成为可行动边界） |
 | `session_before_compact` | 压缩前 | 自定义压缩策略 |
 
 这些扩展点解释了为什么 Pi 的核心 loop 不需要知道所有产品需求：产品需求被挂在运行层和 hook 上。
@@ -99,7 +79,7 @@ sequenceDiagram
 | Agent 到底是什么 | `packages/agent/src/agent-loop.ts` 的最小循环 |
 | 消息、流式事件与状态 | `packages/ai/src/types.ts`、`packages/agent/src/types.ts` |
 | 工具调用机制 | `executeToolCalls`、`prepareToolCall`、`finalizeExecutedToolCall` |
-| 会话、树与分支 | `packages/coding-agent/src/core/session-manager.ts` |
+| 会话、树与分支 | `packages/coding-agent/src/core/session-manager.ts`（新一代见 `packages/agent/src/harness/session/`） |
 | 上下文、技能与压缩 | `resource-loader.ts`、`system-prompt.ts`、`compaction/` |
 | 教学版目标项目 | `examples/teaching-agent/src/server/agent/*` |
 

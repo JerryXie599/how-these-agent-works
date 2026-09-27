@@ -19,40 +19,29 @@ Pi 的工具设计有三个核心点：
 | `parameters` | 参数 schema，用于模型理解和运行时校验 |
 | `execute` | 本地真正执行工具的函数 |
 
-教学版中我们用 Zod/手写类型都可以。Pi 源码使用 TypeBox schema，并在执行前调用 `validateToolArguments()`。
+教学版中我们用 Zod/手写类型都可以。Pi 源码使用 TypeBox schema，并在执行前调用 `validateToolArguments()`（实现位于 `packages/ai/src/utils/validation.ts`）。
 
 ```ts
-interface AgentTool<TArgs, TResult> {
+interface AgentTool<TParams extends TSchema, TDetails = any> {
   name: string;
   description: string;
-  parameters: unknown;
-  execute(args: TArgs, signal?: AbortSignal): Promise<TResult>;
+  label?: string;                       // UI 展示名
+  parameters: TSchema;                  // TypeBox schema
+  prepareArguments?: (args: unknown) => unknown; // schema 校验前的参数兼容 shim
+  execute: (
+    toolCallId: string,
+    params: Static<TParams>,
+    signal?: AbortSignal,
+    onUpdate?: (partial: AgentToolResult<TDetails>) => void,
+  ) => Promise<AgentToolResult<TDetails>>;
+  executionMode?: "sequential" | "parallel";
+  replay?: "never" | "safe";
 }
 ```
 
 ## 工具调用链路
 
-```mermaid
-sequenceDiagram
-  participant AgentLoop as Agent Loop
-  participant Model as LLM
-  participant Hook as Hooks
-  participant Tool as Tool
-  participant Ctx as Context
-
-  AgentLoop->>Model: messages + tools
-  Model-->>AgentLoop: assistant content: toolCall
-  AgentLoop->>AgentLoop: find tool by name
-  AgentLoop->>AgentLoop: validate args
-  AgentLoop->>Hook: beforeToolCall
-  Hook-->>AgentLoop: allow/block
-  AgentLoop->>Tool: execute(args)
-  Tool-->>AgentLoop: result
-  AgentLoop->>Hook: afterToolCall
-  Hook-->>AgentLoop: optional override
-  AgentLoop->>Ctx: append toolResult
-  AgentLoop->>Model: next request
-```
+[![工具调用链路 流程图](/diagrams/concepts-tools-1.png)](/diagrams/concepts-tools-1.png)
 
 ## 为什么要有 before/after hooks
 

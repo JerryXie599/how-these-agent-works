@@ -1,0 +1,9 @@
+flowchart LR
+    A[tool_use 块<br>name + arguments] --> B[PreToolUse hook<br>exit 2 = 一票否决]
+    B --> C[权限系统<br>deny → ask → allow]
+    C --> D[工具本体执行]
+    D --> E[PostToolUse hook<br>审计与修改]
+    E --> F[tool result 回写上下文]
+
+
+

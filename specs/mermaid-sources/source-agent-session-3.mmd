@@ -1,0 +1,10 @@
+flowchart LR
+  Agent["Agent 内核"] -->|"被包装"| AS["AgentSession（当前主线）"]
+  Agent -->|"被包装"| Harness["AgentHarness（新一代）"]
+  AS --> SM["SessionManager · JSONL v3"]
+  Harness --> Repo["Session / JsonlSessionRepo · v4 lane-based"]
+
+
+
+
+

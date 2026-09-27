@@ -1,0 +1,8 @@
+flowchart TB
+    A[模型] -- 唯一暴露的 run_code --> B[生成 TypeScript 程序<br>import tools:sdk]
+    B --> C[dsh-code-runtime-worker-thread<br>worker 线程沙箱执行]
+    C --> D[一次程序 = 多步工具组合<br>中间结果不进上下文]
+    D -- 最终结果 --> A
+
+
+

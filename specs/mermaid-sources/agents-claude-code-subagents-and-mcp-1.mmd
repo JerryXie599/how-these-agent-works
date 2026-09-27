@@ -1,0 +1,9 @@
+flowchart TB
+    M[主代理<br>自己的上下文] -- Task 委派<br>prompt + 工具白名单 --> S1[子代理 A<br>独立上下文窗口]
+    M -- Task 委派 --> S2[子代理 B<br>独立上下文窗口]
+    S1 -- 最终报告 --> M
+    S2 -- 最终报告 --> M
+    S1 -. 全程 transcript 落盘 .-> D[(subagents/ 目录)]
+
+
+

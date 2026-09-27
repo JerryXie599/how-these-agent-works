@@ -1,0 +1,11 @@
+flowchart LR
+  A["runAgentLoop"] --> B{"教学版"}
+  B --> C["MockModel.complete()"]
+  A --> D{"真实 Pi"}
+  D --> E["pi-ai Models.stream()"]
+  E --> F["Provider adapter"]
+
+
+
+
+

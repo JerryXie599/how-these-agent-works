@@ -23,15 +23,7 @@ public/favicon.svg
 
 ## 页面结构
 
-```mermaid
-flowchart TB
-  App["App"] --> Topbar["刷新 / 重置"]
-  App --> Chat["MessageCard[]"]
-  App --> Composer["输入框 + 发送按钮"]
-  App --> Tree["Session Tree"]
-  App --> Tools["ToolCard[]"]
-  App --> Timeline["Event Timeline"]
-```
+[![页面结构 流程图](/diagrams/project-build-06-frontend-1.png)](/diagrams/project-build-06-frontend-1.png)
 
 这个布局的教学目的很明确：
 

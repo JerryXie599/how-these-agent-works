@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant M as 模型（Pi 会话内）
+    participant X as 扩展桥 TS
+    participant API as 后端 API
+    participant G as 四道闸
+    participant T as 工具执行
+    M->>X: 发起工具调用
+    X->>API: POST /agent-tools/{name}
+    API->>G: 闸门求值
+    alt 放行
+        G->>T: 执行（经代理链）
+        T-->>X: 结果 JSON
+    else 拦截
+        G-->>X: [已拦截 · 类别] 原因 + 替代打法
+    end
+    X-->>M: tool result 回写
+

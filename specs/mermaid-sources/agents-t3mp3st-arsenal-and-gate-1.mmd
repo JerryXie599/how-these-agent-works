@@ -1,0 +1,11 @@
+flowchart TB
+    A["AgentLoop 发起工具调用"] --> B{"是 gated 工具?"}
+    B -- 否 --> D
+    B -- 是 --> C{"预授权 / 交互批准?"}
+    C -- 否 --> X["拒绝<br>denied-no-approver（并记审计）"]
+    C -- 是 --> D["Scope 校验<br>目标在授权范围内?"]
+    D -- 否 --> Y["SCOPE DENIED<br>不 spawn 任何进程"]
+    D -- 是 --> E["执行工具<br>（内置实现 / CLI 包装）"]
+    E --> F["结果返回 AgentLoop<br>超大输出截断"]
+    F --> G["执行历史记录"]
+

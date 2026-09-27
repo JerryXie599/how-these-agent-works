@@ -20,68 +20,11 @@
 
 ## 架构
 
-```mermaid
-flowchart TB
-  subgraph Browser["React 前端"]
-    Chat["ChatView"]
-    Timeline["EventTimeline"]
-    Inspector["MessageInspector"]
-  end
-
-  subgraph Server["Node 后端"]
-    API["Express API"]
-    Loop["runAgentLoop"]
-    Model["MockModel"]
-    Tools["ToolRegistry"]
-    Store["JsonlSessionStore"]
-    Events["AgentEvent[]"]
-  end
-
-  subgraph Workspace["教学工作区"]
-    Files["sample files"]
-    Notes["notes"]
-  end
-
-  Chat --> API
-  API --> Store
-  API --> Loop
-  Loop --> Model
-  Loop --> Tools
-  Tools --> Workspace
-  Loop --> Events
-  Events --> API
-  API --> Timeline
-  API --> Inspector
-```
+[![架构 流程图](/diagrams/project-overview-1.png)](/diagrams/project-overview-1.png)
 
 ## 一次请求的后端流程
 
-```mermaid
-sequenceDiagram
-  participant UI as React
-  participant API as Express
-  participant Store as JsonlSessionStore
-  participant AgentLoop as Agent Loop
-  participant Model as MockModel
-  participant Tool as ToolRegistry
-
-  UI->>API: POST /api/runs
-  API-->>UI: runId
-  UI->>API: GET /api/runs/:runId/events
-  API->>Store: append user message
-  API->>Store: buildContext()
-  API->>AgentLoop: runAgentLoop(context)
-  AgentLoop->>Model: complete(messages, tools)
-  Model-->>AgentLoop: toolCall read_file
-  AgentLoop->>Tool: execute read_file
-  Tool-->>AgentLoop: tool result
-  AgentLoop->>Model: complete(messages, tools)
-  Model-->>AgentLoop: final answer
-  AgentLoop-->>API: newMessages + events
-  API->>Store: append newMessages
-  API-->>UI: SSE AgentEvent
-  API-->>UI: run_done + full session
-```
+[![一次请求的后端流程 流程图](/diagrams/project-overview-2.png)](/diagrams/project-overview-2.png)
 
 `POST /api/prompt` 仍然保留，方便 curl 调试；浏览器默认使用 `/api/runs` + SSE，这样读者能看到消息和工具事件逐步进入 UI。
 

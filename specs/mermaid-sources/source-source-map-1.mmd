@@ -1,0 +1,17 @@
+flowchart TB
+  Docs["官方文档: docs/latest"] --> SDK["SDK 概念"]
+  SDK --> CoreTypes["packages/ai/src/types.ts 协议"]
+  CoreTypes --> Models["packages/ai/src/models.ts 模型入口"]
+  Models --> AgentTypes["packages/agent/src/types.ts"]
+  AgentTypes --> Loop["packages/agent/src/agent-loop.ts"]
+  Loop --> Agent["packages/agent/src/agent.ts"]
+  Agent --> Session["packages/coding-agent/src/core/agent-session.ts"]
+  Session --> Store["packages/coding-agent/src/core/session-manager.ts"]
+  Session --> Resources["packages/coding-agent/src/core/resource-loader.ts"]
+  Session --> Tools["packages/coding-agent/src/core/tools/"]
+  Agent -.->|"新一代"| Harness["packages/agent/src/harness/"]
+
+
+
+
+

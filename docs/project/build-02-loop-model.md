@@ -162,16 +162,7 @@ for (let turn = 1; turn <= maxTurns; turn++) {
 
 这里保留了 Pi Loop 的核心骨架：
 
-```mermaid
-flowchart TD
-  A["turn_start"] --> B["model.complete()"]
-  B --> C["assistant message"]
-  C --> D{"has toolCall?"}
-  D -->|"no"| E["agent_end"]
-  D -->|"yes"| F["execute tool"]
-  F --> G["append toolResult"]
-  G --> B
-```
+[![主循环 流程图](/diagrams/project-build-02-loop-model-1.png)](/diagrams/project-build-02-loop-model-1.png)
 
 ## 事件怎么发
 

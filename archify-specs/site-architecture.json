@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "教程站点总体架构",
+    "locale": "zh-CN",
+    "output": "docs/public/archify/site-architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "archify-pipeline",
+        "label": "交互图管线",
+        "focus": [
+          "archspec",
+          "archcli",
+          "archhtml",
+          "embed",
+          "site"
+        ],
+        "note": "规格 JSON 经 showcase 校验后交付为自包含 HTML，组件等比嵌入。"
+      },
+      {
+        "id": "mermaid-pipeline",
+        "label": "流程图管线",
+        "focus": [
+          "mmd",
+          "mmdrender",
+          "diagrams",
+          "site"
+        ],
+        "note": "mermaid 源码存档，离线渲染成 PNG 供页面引用。"
+      },
+      {
+        "id": "structure",
+        "label": "注册表与教学代码",
+        "focus": [
+          "registry",
+          "site",
+          "examples",
+          "visitor"
+        ],
+        "note": "注册表一处驱动侧边栏与首页；examples 与章节配套。"
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "archspec",
+      "type": "database",
+      "label": "Archify 规格",
+      "sublabel": "archify-specs/*.json",
+      "pos": [
+        15,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "archcli",
+      "type": "backend",
+      "label": "Archify CLI",
+      "sublabel": "validate → deliver",
+      "pos": [
+        180,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "archhtml",
+      "type": "database",
+      "label": "交互图 HTML",
+      "sublabel": "docs/public/archify/",
+      "pos": [
+        345,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "embed",
+      "type": "messagebus",
+      "label": "ArchifyEmbed",
+      "sublabel": "等比预览 · 放大体验",
+      "pos": [
+        510,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "site",
+      "type": "frontend",
+      "label": "VitePress 站点",
+      "sublabel": "docs/*.md · 5 个 Agent 章节",
+      "pos": [
+        675,
+        300
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "visitor",
+      "type": "external",
+      "label": "读者",
+      "sublabel": "浏览器",
+      "pos": [
+        840,
+        300
+      ],
+      "size": [
+        90,
+        62
+      ]
+    },
+    {
+      "id": "mmd",
+      "type": "database",
+      "label": "mermaid 源码",
+      "sublabel": "specs/mermaid-sources/",
+      "pos": [
+        15,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "mmdrender",
+      "type": "backend",
+      "label": "渲染脚本",
+      "sublabel": "mermaid-to-png · 离线",
+      "pos": [
+        180,
+        490
+      ],
+      "size": [
+        135,
+        62
+      ]
+    },
+    {
+      "id": "diagrams",
+      "type": "database",
+      "label": "流程图 PNG",
+      "sublabel": "docs/public/diagrams/",
+      "pos": [
+        345,
+        490
+      ],
+      "size": [
+        125,
+        62
+      ]
+    },
+    {
+      "id": "examples",
+      "type": "backend",
+      "label": "教学代码",
+      "sublabel": "examples/ · 可运行",
+      "pos": [
+        840,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "registry",
+      "type": "backend",
+      "label": "agents 注册表",
+      "sublabel": "agents.mjs · 一处驱动",
+      "pos": [
+        660,
+        490
+      ],
+      "size": [
+        130,
+        62
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "archspec",
+      "to": "archcli",
+      "label": "输入"
+    },
+    {
+      "from": "archcli",
+      "to": "archhtml",
+      "label": "交付",
+      "variant": "emphasis"
+    },
+    {
+      "from": "archhtml",
+      "to": "embed",
+      "label": "iframe",
+      "labelAt": [
+        577,
+        290
+      ]
+    },
+    {
+      "from": "embed",
+      "to": "site",
+      "label": "嵌入"
+    },
+    {
+      "from": "site",
+      "to": "visitor",
+      "label": "阅读"
+    },
+    {
+      "from": "mmd",
+      "to": "mmdrender",
+      "label": "渲染"
+    },
+    {
+      "from": "mmdrender",
+      "to": "diagrams"
+    },
+    {
+      "from": "diagrams",
+      "to": "site",
+      "label": "静态资源",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          407.5,
+          430
+        ],
+        [
+          740,
+          430
+        ]
+      ],
+      "labelAt": [
+        553,
+        423
+      ]
+    },
+    {
+      "from": "registry",
+      "to": "site",
+      "label": "侧边栏 / 首页",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "from": "visitor",
+      "to": "examples",
+      "label": "运行 Demo",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "注册表驱动",
+      "items": [
+        "agents.mjs 一处登记，侧边栏首页自动生成",
+        "新增 Agent = 目录 + 注册 + 一张图"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "两条资产管线",
+      "items": [
+        "Archify：规格校验后交付自包含 HTML",
+        "mermaid：源码存档，离线渲染 PNG"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "内容与代码分离",
+      "items": [
+        "各项目章节各自成树，互不依赖",
+        "examples/ 的 Demo 可独立运行"
+      ]
+    }
+  ]
+}

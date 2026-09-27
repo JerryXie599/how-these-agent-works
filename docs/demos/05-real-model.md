@@ -124,12 +124,7 @@ agent-notes.md
 
 Demo 5 不替换教学版 Agent 的默认 `MockModel`。它只展示一个替换方向：
 
-```mermaid
-flowchart LR
-  A["MockModel.complete()"] --> B["AssistantMessage"]
-  C["OpenAI-compatible adapter"] --> B
-  B --> D["runAgentLoop"]
-```
+[![和最终项目的关系 流程图](/diagrams/demos-05-real-model-1.png)](/diagrams/demos-05-real-model-1.png)
 
 只要 adapter 返回同样的 `AssistantMessage`，后面的 loop、工具和会话系统就可以继续复用。
 

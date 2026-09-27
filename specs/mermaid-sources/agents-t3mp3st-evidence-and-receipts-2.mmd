@@ -1,0 +1,9 @@
+flowchart TB
+    A[多个反驳者并行审阅同一 finding] --> B{逐票检查}
+    B -- 投 REFUTED --> C["强制引用校验<br>guardExistsInSource()<br>引用的守卫必须出现在源码里"]
+    C -- 守卫不存在 --> D[票降级为 SURVIVED]
+    C -- 守卫真实存在 --> E[计入裁决]
+    B -- 投 SURVIVED --> E
+    D --> F[严格多数裁决<br>REFUTED / SURVIVED / INCONCLUSIVE]
+    E --> F
+

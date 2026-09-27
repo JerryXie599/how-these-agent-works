@@ -1,0 +1,8 @@
+flowchart TB
+    A[每轮恰好一次 llm.stream] --> B[先持久化工具调用<br>再启动它的子执行]
+    B --> C[provider 流关闭后<br>await 所有工具 fiber]
+    C --> D[重载投影历史<br>继续下一轮]
+    D --> A
+    E[SessionRunCoordinator<br>同会话串行 · 异会话并行] -.-> A
+
+

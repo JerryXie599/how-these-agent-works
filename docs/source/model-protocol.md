@@ -28,34 +28,28 @@ if (provider === "anthropic") {
 
 ## 核心类型关系
 
-```mermaid
-flowchart TB
-  Context["Context: systemPrompt + messages + tools"] --> Stream["streamSimple / completeSimple"]
-  Stream --> Provider["Provider adapter"]
-  Provider --> Remote["OpenAI / Anthropic / Google / Bedrock / ..."]
-  Remote --> Provider
-  Provider --> Events["AssistantMessageEvent stream"]
-  Events --> Message["AssistantMessage"]
-  Message --> Stop["stopReason / usage / content blocks"]
-```
+[![核心类型关系 流程图](/diagrams/source-model-protocol-1.png)](/diagrams/source-model-protocol-1.png)
 
-可以把 `Context` 理解成模型请求的稳定输入：
+可以把 `Context` 理解成模型请求的稳定输入。注意 v0.86 起 `systemPrompt` 变成可选：它是“leading system message”的简写，进入 provider 前会被 `normalizeContext()` 折叠成 transcript 里的 system message，并规范化为 `TranscriptContext`：
 
 ```ts
 type Context = {
-  systemPrompt: string;
+  systemPrompt?: string; // 可选，简写；normalizeContext() 会折叠进 messages
   messages: Message[];
   tools?: Tool[];
 };
 ```
 
-输出不是一个字符串，而是一条 `AssistantMessage`：
+输出不是一个字符串，而是一条 `AssistantMessage`（v0.87 中它还携带 `api`、`provider`、`model`、`usage` 等元数据，便于 UI 和成本统计）：
 
 ```ts
 type AssistantMessage = {
   role: "assistant";
   content: Array<TextContent | ThinkingContent | ToolCall>;
-  stopReason: "stop" | "length" | "toolUse" | "error" | "aborted";
+  api: Api;
+  provider: ProviderId;
+  model: string;
+  stopReason: "pending" | "stop" | "length" | "toolUse" | "error" | "aborted" | "deferred";
   usage: Usage;
   timestamp: number;
 };
@@ -65,21 +59,7 @@ type AssistantMessage = {
 
 ## 从 provider 到 Agent 的转换链路
 
-```mermaid
-sequenceDiagram
-  participant AgentLoop as Agent Loop
-  participant AI as pi-ai
-  participant Adapter as Provider Adapter
-  participant API as Remote Model API
-
-  AgentLoop->>AI: streamSimple(context, options)
-  AI->>Adapter: normalize context
-  Adapter->>API: provider-specific request
-  API-->>Adapter: provider-specific stream
-  Adapter-->>AI: AssistantMessageEvent
-  AI-->>AgentLoop: text/tool/thinking/error events
-  AgentLoop->>AgentLoop: assemble AssistantMessage
-```
+[![从 provider 到 Agent 的转换链路 流程图](/diagrams/source-model-protocol-2.png)](/diagrams/source-model-protocol-2.png)
 
 注意这个链路里有两个方向的转换：
 
@@ -94,16 +74,22 @@ sequenceDiagram
 
 | 文件 | 阅读目标 |
 | --- | --- |
-| `packages/ai/src/types.ts` | `Message`、`Tool`、`Context`、`AssistantMessageEvent`、`Model` |
-| `packages/ai/src/stream.ts` | `streamSimple()` 和 `completeSimple()` 如何驱动 provider |
-| `packages/ai/src/providers/transform-messages.ts` | 消息如何转成供应商格式 |
-| `packages/ai/src/providers/openai-responses.ts` | 一个真实 provider 适配器怎么处理工具和流式事件 |
-| `packages/ai/src/providers/anthropic.ts` | 对比另一家 provider 的差异如何被抹平 |
-| `packages/ai/src/api-registry.ts` | provider/api 如何注册和查找 |
+| `packages/ai/src/types.ts` | `Message`、`Tool`、`Context`、`TranscriptContext`、`AssistantMessageEvent`、`Model` |
+| `packages/ai/src/models.ts` | `Models` 类：`stream()` / `streamSimple()` / `complete()` 如何驱动 provider |
+| `packages/ai/src/utils/transcript.ts` | `normalizeContext()` 如何把 `Context` 规范化为 `TranscriptContext` |
+| `packages/ai/src/api/transform-messages.ts` | 消息如何转成供应商格式 |
+| `packages/ai/src/api/openai-responses.ts` | 一个真实 API 适配器怎么处理工具和流式事件 |
+| `packages/ai/src/api/anthropic-messages.ts` | 对比另一家的差异如何被抹平 |
+| `packages/ai/src/api/lazy.ts` + `packages/ai/src/index.ts` | provider/api 如何注册和查找 |
+| `packages/ai/src/providers/openai.ts` | provider 定义（模型目录、默认参数）长什么样 |
+
+::: tip 版本说明
+教程早期写作时读的 `packages/ai/src/stream.ts` 已经不存在。v0.80 前后 Pi 把模型入口收敛为 `Models` 类，并把每家 API 的请求适配器独立成 `packages/ai/src/api/*.ts`（懒加载版本为 `*.lazy.ts`）。顶层的 `streamSimple` / `completeSimple` 仍可从 `packages/ai/src/legacy-api-aliases.ts` 拿到，但已标记 deprecated，新代码请走 `Models.stream()` 或对应 API 模块的 `streamSimple`。
+:::
 
 第一次读时，不要陷进每家 API 的参数细节。先抓住三个不变量：
 
-1. 上层只传 `Context`。
+1. 上层只传 `Context`（进入 provider 前会先被 `normalizeContext()` 规范化）。
 2. 下层只吐 `AssistantMessageEvent`。
 3. 最终都能组装成 `AssistantMessage`。
 
@@ -111,14 +97,7 @@ sequenceDiagram
 
 教学版没有实现 `pi-ai`，而是用 `MockModel` 站在同一个位置上：
 
-```mermaid
-flowchart LR
-  A["runAgentLoop"] --> B{"教学版"}
-  B --> C["MockModel.complete()"]
-  A --> D{"真实 Pi"}
-  D --> E["pi-ai streamSimple()"]
-  E --> F["Provider adapter"]
-```
+[![和教学版 MockModel 的关系 流程图](/diagrams/source-model-protocol-3.png)](/diagrams/source-model-protocol-3.png)
 
 `MockModel` 的任务不是模拟某一家供应商，而是模拟协议层给 loop 的结果：
 

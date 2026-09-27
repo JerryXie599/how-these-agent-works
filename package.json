@@ -10,6 +10,8 @@
     "docs:dev": "vitepress dev docs --host 0.0.0.0",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs --host 0.0.0.0",
+    "docs:diagrams": "node scripts/mermaid-to-png.mjs",
+    "docs:diagrams:render": "node scripts/mermaid-to-png.mjs --render",
     "demo:01": "tsx examples/demos/01-loop.ts",
     "demo:02": "tsx examples/demos/02-tools.ts",
     "demo:03": "tsx examples/demos/03-session-tree.ts",
@@ -23,6 +25,7 @@
   "devDependencies": {
     "@types/node": "^22.15.21",
     "mermaid": "^11.6.0",
+    "puppeteer-core": "^25.11.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitepress": "^1.6.3"

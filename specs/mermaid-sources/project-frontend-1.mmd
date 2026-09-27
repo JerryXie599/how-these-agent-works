@@ -1,0 +1,17 @@
+sequenceDiagram
+  participant UI as React
+  participant API as Express
+  participant AgentLoop as runAgentLoop
+
+  UI->>API: POST /api/runs
+  API-->>UI: runId
+  UI->>API: GET /api/runs/:id/events
+  API->>AgentLoop: runAgentLoop(onEvent)
+  AgentLoop-->>API: AgentEvent
+  API-->>UI: SSE AgentEvent
+  API-->>UI: run_done + full session
+
+
+
+
+

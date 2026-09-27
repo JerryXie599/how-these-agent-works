@@ -1,0 +1,14 @@
+flowchart TB
+  A["教学版 MockModel Agent"] --> B["provider adapter"]
+  A --> C["tool permission hook"]
+  A --> D["SSE streaming UI"]
+  A --> E["session tree UI"]
+  B --> F["真实模型 + 统一协议"]
+  C --> G["工具确认 / 拦截 / 改写"]
+  D --> H["增量消息和工具事件"]
+  E --> I["分支导航和 branch summary"]
+
+
+
+
+

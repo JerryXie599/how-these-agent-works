@@ -1,0 +1,12 @@
+flowchart LR
+  A["ToolDefinition"] --> B["MockModel"]
+  B --> C["ToolCallContent"]
+  C --> D["ToolRegistry.execute()"]
+  D --> E["ToolResult"]
+  E --> F["ToolResultMessage"]
+  F --> G["next model request"]
+
+
+
+
+

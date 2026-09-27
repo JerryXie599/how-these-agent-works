@@ -1,0 +1,16 @@
+flowchart TB
+  Context["Context: systemPrompt? + messages + tools"] --> Norm["normalizeContext()"]
+  Norm --> Transcript["TranscriptContext"]
+  Transcript --> Models["Models.stream / streamSimple"]
+  Models --> Adapter["API 适配器: api/* (openai-responses / anthropic-messages / ...)"]
+  Adapter --> Provider["Provider 定义: providers/*"]
+  Provider --> Remote["OpenAI / Anthropic / Google / Bedrock / ..."]
+  Remote --> Adapter
+  Adapter --> Events["AssistantMessageEvent stream"]
+  Events --> Message["AssistantMessage"]
+  Message --> Stop["stopReason / usage / content blocks"]
+
+
+
+
+

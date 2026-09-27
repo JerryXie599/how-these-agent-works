@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph write[运行时：只追加]
+        E1[消息事件] --> L[(append-only 日志<br>session.jsonl.zstd)]
+        E2[工具调用事件] --> L
+        E3[审批/asked · decided] --> L
+        E4[goal/change · inbox/spliced] --> L
+        E5[checkpoint 事件] --> L
+    end
+    L --> P1[投影: 消息历史]
+    L --> P2[投影: 会话列表/标题]
+    L --> P3[投影: 统计与轨迹]
+    L -. 持久投影缓存 .-> C[(投影缓存)]
+
+
+
