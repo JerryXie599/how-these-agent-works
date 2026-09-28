@@ -118,6 +118,7 @@ export const agents = [
 			{ text: "CyberStrike 是什么", link: "/agents/cyberstrike/" },
 			{ text: "总体架构", link: "/agents/cyberstrike/architecture" },
 			{ text: "智能体与技能库", link: "/agents/cyberstrike/agents-and-skills" },
+			{ text: "知识库深读：三家对比", link: "/agents/cyberstrike/knowledge-deep-dive" },
 			{ text: "代理测试流水线", link: "/agents/cyberstrike/proxy-pipeline" },
 			{ text: "Bolt 与报告", link: "/agents/cyberstrike/bolt-and-report" },
 		],
